@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2025 DigiPen Institute of Technology
+Copyright (C) 2023 DigiPen Institute of Technology
 Reproduction or distribution of this file or its contents without
 prior written consent is prohibited
 File Name:  Camera.h
@@ -12,10 +12,9 @@ Created:    March 27, 2025
 #include "Vec2.h"
 #include "Rect.h"
 #include "Matrix.h"
-#include "Component.h"
 
 namespace CS230 {
-    class Camera : public Component {
+    class Camera {
     public:
         Camera(Math::rect player_zone);
         void SetPosition(Math::vec2 new_position);

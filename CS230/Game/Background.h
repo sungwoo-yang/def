@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2025 DigiPen Institute of Technology
+Copyright (C) 2023 DigiPen Institute of Technology
 Reproduction or distribution of this file or its contents without
 prior written consent is prohibited
 File Name:  Background.h
@@ -12,7 +12,7 @@ Created:    April 3, 2025
 #include "../Engine/Texture.h"
 #include "../Engine/Camera.h"
 
-class Background : public CS230::Component {
+class Background {
 public:
     void Add(const std::filesystem::path& texture_path, double speed);
     void Unload();

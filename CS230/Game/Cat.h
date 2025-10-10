@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2025 DigiPen Institute of Technology
+Copyright (C) 2023 DigiPen Institute of Technology
 Reproduction or distribution of this file or its contents without
 prior written consent is prohibited
 File Name:  Cat.h
@@ -13,35 +13,19 @@ Created:    March 20, 2025
 #include "../Engine/Camera.h"
 #include "../Engine/Matrix.h"
 #include "../Engine/GameObject.h"
-#include "../Engine/Timer.h"
-#include "../GameObjectTypes.h"
 
 class Cat : public CS230::GameObject {
 public:
-    Cat(Math::vec2 start_position, GameObject* starting_floor);
+    Cat(Math::vec2 start_position, const CS230::Camera& camera);
     void Update(double dt) override;
-    void Draw(Math::TransformationMatrix camera_matrix) override;
     const Math::vec2& GetPosition() const { return GameObject::GetPosition(); };
-    GameObjectTypes Type() override { return GameObjectTypes::Cat; };
-    std::string TypeName() override { return "Cat"; }
-    bool CanCollideWith(GameObjectTypes other_type) override;
-    void ResolveCollision(GameObject* other_object) override;
 
 private:
     static constexpr double x_acceleration = 400;
     static constexpr double x_drag = 450;
     static constexpr double max_velocity = 300;
     static constexpr double jump_velocity = 650;
-    static constexpr double hurt_time = 2.0;
-    static constexpr double hurt_velocity = 350;
-    static constexpr double hurt_acceleration = 300;
-    static constexpr double bounce_velocity = 700;
-    static constexpr double pop_velocity = 400;
-    static constexpr double LargeFallHeight = 250;
-    double fall_start_y;
-    CS230::Timer* hurt_timer = nullptr;
-    GameObject* standing_on;
-
+    const CS230::Camera& camera;
     void update_x_velocity(double dt);
 
     enum class Animations {
@@ -51,6 +35,14 @@ private:
         Falling,
         Skidding
     };
+
+    //class State {
+    //public:
+    //    virtual void Enter(Cat* cat) = 0;
+    //    virtual void Update(Cat* cat, double dt) = 0;
+    //    virtual void CheckExit(Cat* cat) = 0;
+    //    virtual std::string GetName() = 0;
+    //};
 
     class State_Jumping : public State {
     public:
@@ -62,6 +54,9 @@ private:
 
 
     State_Jumping state_jumping;
+
+    //void change_state(State* new_state);
+    //State* current_state = nullptr;
 
     class State_Idle : public State {
     public:

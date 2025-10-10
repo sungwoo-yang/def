@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2025 DigiPen Institute of Technology
+Copyright (C) 2023 DigiPen Institute of Technology
 Reproduction or distribution of this file or its contents without
 prior written consent is prohibited
 File Name:  Mode1.cpp
@@ -9,125 +9,71 @@ Created:    March 11, 2025
 */
 
 #include "../Engine/Engine.h"
-#include "../Engine/GameObjectManager.h" 
-#include "../Engine/ShowCollision.h"
-#include "../Engine/Particle.h"
 #include "States.h"
 #include "Mode1.h"
 #include "Cat.h"
 #include "Asteroid.h"
 #include "Crates.h"
 #include "Robot.h"
-#include "Fonts.h"
-#include "Gravity.h"
-#include "Background.h"
-#include "Floor.h"
-#include "Portal.h"
-#include "Score.h"
-#include "Particles.h"
+#include <iostream>
 
 Mode1::Mode1() :
     cat_ptr(nullptr),
-    last_timer(static_cast<int>(timer_max))
+    camera({ { 0.15 * Engine::GetWindow().GetSize().x, 0 }, { 0.35 * Engine::GetWindow().GetSize().x, 0 } })
 {
 }
 
-void Mode1::update_timer_text(int value) {
-    timer_texture = Engine::GetFont(static_cast<int>(Fonts::Simple)).PrintToTexture("Timer: " + std::to_string(value), 0xFFFFFFFF);
-}
-
-void Mode1::update_score_text(int value) {
-    score_texture = Engine::GetFont(static_cast<int>(Fonts::Simple)).PrintToTexture("Score: " + std::to_string(value), 0xFFFFFFFF);
-}
-
 void Mode1::Load() {
-    AddGSComponent(new CS230::Camera({ { 0.15 * Engine::GetWindow().GetSize().x, 0 }, { 0.35 * Engine::GetWindow().GetSize().x, 0 } }));
-    AddGSComponent(new Gravity(800.0));
-    AddGSComponent(new CS230::Timer(timer_max));
-    AddGSComponent(new Background());
-    AddGSComponent(new CS230::GameObjectManager());
-#ifdef _DEBUG
-    AddGSComponent(new CS230::ShowCollision());
-#endif
+    background.Add("Assets/Planets.png", 0.25);
+    background.Add("Assets/Ships.png", 0.5);
+    background.Add("Assets/Foreground.png", 1.0);
 
-    auto background = Engine::GetGameStateManager().GetGSComponent<Background>();
-    background->Add("Assets/Planets.png", 0.25);
-    background->Add("Assets/Ships.png", 0.5);
-    background->Add("Assets/Foreground.png", 1.0);
-
-    auto camera = Engine::GetGameStateManager().GetGSComponent<CS230::Camera>();
-    camera->SetPosition({ 0, 0 });
-    camera->SetLimit({ { 0, 0 }, background->GetSize() - Engine::GetWindow().GetSize() });
-    update_timer_text(last_timer);
-
-    AddGSComponent(new Score());
-    update_score_text(0);
-
-    auto object = Engine::GetGameStateManager().GetGSComponent<CS230::GameObjectManager>();
-    Floor* starting_floor_ptr = new Floor(Math::irect{ { 0, 0 }, { 930, static_cast<int>(floor) } });
-    object->Add(starting_floor_ptr);
-    object->Add(new Floor(Math::irect{ { 1014, 0 }, { 2700, static_cast<int>(floor) } }));
-    object->Add(new Floor(Math::irect{ { 2884, 0 }, { 4126, static_cast<int>(floor) } }));
-    object->Add(new Floor(Math::irect{ { 4208, 0 }, { 5760, static_cast<int>(floor) } }));
-
-    object->Add(new Portal(static_cast<int>(States::MainMenu), Math::irect{ { 5700, static_cast<int>(floor) }, { 5800, static_cast<int>(floor + 200) } }));
-
-    cat_ptr = new Cat({ 300, floor }, starting_floor_ptr);
-    object->Add(cat_ptr);
-    object->Add(new Asteroid({ 600, floor }));
-    object->Add(new Asteroid({ 1800, floor }));
-    object->Add(new Asteroid({ 2400, floor }));
-    object->Add(new Crates({ 900, floor }, 2));
-    object->Add(new Crates({ 1400, floor }, 1));
-    object->Add(new Crates({ 1900, floor }, 5));
-    object->Add(new Crates({ 4000, floor }, 3));
-    object->Add(new Crates({ 5400, floor }, 1));
-    object->Add(new Crates({ 5500, floor }, 3));
-    object->Add(new Crates({ 5600, floor }, 5));    
-    object->Add(new Robot({ 1025, floor }, cat_ptr, 1025, 1350));
-    object->Add(new Robot({ 2050, floor }, cat_ptr, 2050, 2325));
-    object->Add(new Robot({ 3400, floor }, cat_ptr, 3400, 3800));
-    object->Add(new Robot({ 4225, floor }, cat_ptr, 4225, 4800));
-
-    AddGSComponent(new CS230::ParticleManager<Particles::Smoke>());
+    camera.SetPosition({ 0, 0 });
+    camera.SetLimit({ { 0, 0 }, background.GetSize() - Engine::GetWindow().GetSize() });
+    cat_ptr = new Cat{ {300, floor}, camera };
+    gameobjectmanager.Add(cat_ptr);
+    gameobjectmanager.Add(new Asteroid({ 600, floor }));
+    gameobjectmanager.Add(new Asteroid({ 1800, floor }));
+    gameobjectmanager.Add(new Asteroid({ 2400, floor }));
+    gameobjectmanager.Add(new Crates({ 900, floor }, 2));
+    gameobjectmanager.Add(new Crates({ 1400, floor }, 1));
+    gameobjectmanager.Add(new Crates({ 2000, floor }, 5));
+    gameobjectmanager.Add(new Crates({ 4000, floor }, 3));
+    gameobjectmanager.Add(new Crates({ 5600, floor }, 5));
+    gameobjectmanager.Add(new Robot({ 1200, Mode1::floor }));
+    gameobjectmanager.Add(new Robot({ 2200, Mode1::floor }));
+    gameobjectmanager.Add(new Robot({ 3400, Mode1::floor }));
+    gameobjectmanager.Add(new Robot({ 4200, Mode1::floor }));
 }
 
 
 void Mode1::Update(double dt) {
-    UpdateGSComponents(dt);
-    Engine::GetGameStateManager().GetGSComponent<CS230::Camera>()->Update(cat_ptr->GetPosition());
-    Engine::GetGameStateManager().GetGSComponent<CS230::GameObjectManager>()->UpdateAll(dt);
+    camera.Update(cat_ptr->GetPosition());
+    gameobjectmanager.UpdateAll(dt);
 
-    if (Engine::GetGameStateManager().GetGSComponent<CS230::Timer>()->RemainingInt() < last_timer) {
-        last_timer = Engine::GetGameStateManager().GetGSComponent<CS230::Timer>()->RemainingInt();
-        update_timer_text(last_timer);
-    }
-    if (last_timer == 0) {
-        Engine::GetGameStateManager().SetNextGameState(static_cast<int>(States::MainMenu));
+    if (Engine::GetInput().KeyJustReleased(CS230::Input::Keys::R)) {
+        Engine::GetGameStateManager().ReloadState();
     }
 
-    if (Engine::GetInput().KeyJustReleased(CS230::Input::Keys::ESC)) {
-        Engine::GetGameStateManager().SetNextGameState(static_cast<int>(States::MainMenu));
+    if (Engine::GetInput().KeyJustReleased(CS230::Input::Keys::Enter)) {
+        Engine::GetGameStateManager().SetNextGameState(static_cast<int>(States::Mode2));
     }
-
-    update_score_text(Engine::GetGameStateManager().GetGSComponent<Score>()->Value());
 }
 
 void Mode1::Draw() {
     Engine::GetWindow().Clear(0x000000FF);
 
-    Math::TransformationMatrix camera_matrix = Engine::GetGameStateManager().GetGSComponent<CS230::Camera>()->GetMatrix();
+    Math::TransformationMatrix camera_matrix = camera.GetMatrix();
 
-    Engine::GetGameStateManager().GetGSComponent<Background>()->Draw(*Engine::GetGameStateManager().GetGSComponent<CS230::Camera>());
-    Engine::GetGameStateManager().GetGSComponent<CS230::GameObjectManager>()->DrawAll(Engine::GetGameStateManager().GetGSComponent<CS230::Camera>()->GetMatrix());
-    timer_texture->Draw(Math::TranslationMatrix(Math::ivec2{ Engine::GetWindow().GetSize().x - 10 - timer_texture->GetSize().x, Engine::GetWindow().GetSize().y - timer_texture->GetSize().y - 5}));
-    score_texture->Draw(Math::TranslationMatrix(Math::ivec2{ Engine::GetWindow().GetSize().x - 10 - score_texture->GetSize().x, Engine::GetWindow().GetSize().y - timer_texture->GetSize().y - score_texture->GetSize().y - 10 }));
+    background.Draw(camera);
+    gameobjectmanager.DrawAll(camera.GetMatrix());
 }
 
+
+
 void Mode1::Unload() {
-    Engine::GetGameStateManager().GetGSComponent<Background>()->Unload();
-    Engine::GetGameStateManager().GetGSComponent<CS230::GameObjectManager>()->Unload();
+    background.Unload();
+    gameobjectmanager.Unload();
     cat_ptr = nullptr;
-    ClearGSComponents();
 }
 

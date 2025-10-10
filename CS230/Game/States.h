@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2025 DigiPen Institute of Technology
+Copyright (C) 2023 DigiPen Institute of Technology
 Reproduction or distribution of this file or its contents without
 prior written consent is prohibited
 File Name:  States.h
@@ -12,7 +12,6 @@ Created:    March 11, 2025
 
 enum class States {
     Splash,
-    MainMenu,
     Mode1,
     Mode2
 };

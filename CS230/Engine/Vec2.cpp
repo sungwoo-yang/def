@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2025 DigiPen Institute of Technology
+Copyright (C) 2023 DigiPen Institute of Technology
 Reproduction or distribution of this file or its contents without
 prior written consent is prohibited
 File Name:  Vec2.cpp
@@ -68,14 +68,8 @@ Math::vec2 Math::vec2::operator-() const {
     return { -x, -y };
 }
 
-Math::vec2 Math::vec2::Normalize() const {
-    double len = std::sqrt(x * x + y * y);
-    if (len == 0.0)
-        return { 0.0, 0.0 };
-    return { x / len, y / len };
-}
-
 //ivec2
+
 bool Math::ivec2::operator==(const ivec2& v) {
     return x == v.x && y == v.y;
 }

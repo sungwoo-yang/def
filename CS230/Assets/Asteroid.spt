@@ -4,4 +4,3 @@ FrameSize 87 88
 NumFrames 3
 Anim Assets/AsteroidLand.anm
 Anim Assets/None.anm
-RectCollision -43 0 43 88

@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2025 DigiPen Institute of Technology
+Copyright (C) 2023 DigiPen Institute of Technology
 Reproduction or distribution of this file or its contents without
 prior written consent is prohibited
 File Name:  Input.h
@@ -17,7 +17,7 @@ namespace CS230 {
         enum class Keys {
             A, B, C, D, E, F, G, H, I, J, K, L, M,
             N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
-            Space, Enter, Left, Up, Right, Down, ESC, Tab,
+            Space, Enter, Left, Up, Right, Down,
             Count
         };
 

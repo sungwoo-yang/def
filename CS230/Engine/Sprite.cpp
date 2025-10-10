@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2025 DigiPen Institute of Technology
+Copyright (C) 2023 DigiPen Institute of Technology
 Reproduction or distribution of this file or its contents without
 prior written consent is prohibited
 File Name:  Sprite.cpp
@@ -10,16 +10,8 @@ Created:    March 18, 2025
 
 #include "Sprite.h"
 #include "Engine.h"
-#include "Collision.h"
 
-
-CS230::Sprite::Sprite(const std::filesystem::path& sprite_file) {
-    Load(sprite_file);
-}
-
-CS230::Sprite::Sprite(const std::filesystem::path& sprite_file, GameObject* given_object) : object(given_object) {
-    Load(sprite_file);
-}
+CS230::Sprite::Sprite() {}
 
 CS230::Sprite::~Sprite() {
     for (Animation* anime : animations) {
@@ -34,8 +26,7 @@ CS230::Sprite::Sprite(Sprite&& temporary) noexcept :
     current_animation(temporary.current_animation),
     frame_size(temporary.frame_size),
     frame_texels(std::move(temporary.frame_texels)),
-    animations(std::move(temporary.animations)),
-    object(temporary.object)
+    animations(std::move(temporary.animations))
 {
 }
 
@@ -104,27 +95,6 @@ void CS230::Sprite::Load(const std::filesystem::path& sprite_file) {
             Engine::GetLogger().LogDebug("Reading animation: " + anim_path);
             animations.push_back(new Animation(anim_path));
         }
-        else if (text == "RectCollision") {
-            Math::irect boundary;
-            in_file >> boundary.point_1.x >> boundary.point_1.y >> boundary.point_2.x >> boundary.point_2.y;
-            if (object == nullptr) {
-                Engine::GetLogger().LogError("Cannot add collision to a null object");
-            }
-            else {
-                object->AddGOComponent(new RectCollision(boundary, object));
-            }
-        }
-        else if (text == "CircleCollision") {
-            double radius;
-            in_file >> radius;
-
-            if (object == nullptr) {
-                Engine::GetLogger().LogError("Cannot add collision to a null object");
-            }
-            else {
-                object->AddGOComponent(new CircleCollision(radius, object));
-            }
-        }
         else {
             Engine::GetLogger().LogError("Unknown command: " + text);
         }
@@ -178,9 +148,4 @@ Math::ivec2 CS230::Sprite::GetFrameTexel(int index) const {
         return { 0, 0 };
     }
     return frame_texels[index];
-}
-
-
-int CS230::Sprite::CurrentAnimation() const {
-    return current_animation;
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2025 DigiPen Institute of Technology
+Copyright (C) 2023 DigiPen Institute of Technology
 Reproduction or distribution of this file or its contents without
 prior written consent is prohibited
 File Name:  Engine.h
@@ -15,7 +15,6 @@ Created:    March 11, 2025
 #include "GameStateManager.h"
 #include "TextureManager.h"
 #include "Input.h"
-#include "Font.h"
 #include <chrono>
 
 class Engine {
@@ -48,12 +47,6 @@ public:
     bool HasGameEnded();
 
     static CS230::TextureManager& GetTextureManager();
-
-    static CS230::Font& GetFont(int index) {
-        return Instance().fonts[index];
-    }
-
-    void AddFont(const std::filesystem::path& file_name);
 private:
     Engine();
 
@@ -72,6 +65,5 @@ private:
     CS230::GameStateManager gamestatemanager;
     CS230::Input input;
     inline static CS230::TextureManager texture_manager;
-    std::vector<CS230::Font> fonts;
 };
 

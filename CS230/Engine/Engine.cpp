@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2025 DigiPen Institute of Technology
+Copyright (C) 2023 DigiPen Institute of Technology
 Reproduction or distribution of this file or its contents without
 prior written consent is prohibited
 File Name:  Engine.cpp
@@ -15,7 +15,7 @@ Engine::Engine() :
     last_tick(std::chrono::system_clock::now()),
     logger(CS230::Logger::Severity::Debug, true, last_tick)
 #else
-    logger(CS230::Logger::Severity::Event, false, last_tick)
+    logger(CS230::Logger::Severity::Event, false)
 #endif
 {
 }
@@ -57,6 +57,7 @@ void Engine::Update() {
         gamestatemanager.Update(dt);
         input.Update();
         window.Update();
+        //Update other services
     }
 }
 
@@ -67,8 +68,4 @@ bool Engine::HasGameEnded()
 
 CS230::TextureManager& Engine::GetTextureManager() {
     return texture_manager;
-}
-
-void Engine::AddFont(const std::filesystem::path& file_name) {
-    fonts.push_back(file_name);
 }

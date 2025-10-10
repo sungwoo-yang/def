@@ -1,6 +1,5 @@
-
 /*
-Copyright (C) 2025 DigiPen Institute of Technology
+Copyright (C) 2023 DigiPen Institute of Technology
 Reproduction or distribution of this file or its contents without
 prior written consent is prohibited
 File Name:  Ship.h
@@ -14,18 +13,13 @@ Created:    March 20, 2025
 #include "../Engine/Input.h"
 #include "../Engine/Vec2.h"
 #include "../Engine/GameObject.h"
-#include "../GameObjectTypes.h"
+
 
 class Ship : public CS230::GameObject {
 public:
 	Ship(Math::vec2 start_position);
 	void Update(double dt) override;
 	void Draw(Math::TransformationMatrix camera_matrix) override;
-	bool Exploded() const { return exploded; }
-	GameObjectTypes Type() override { return GameObjectTypes::Ship; }
-	std::string TypeName() override { return "Ship"; }
-	bool CanCollideWith(GameObjectTypes other_type) override;
-	void ResolveCollision(GameObject* other_object) override;
 
 private:
 	Math::ivec2 size;
@@ -36,14 +30,8 @@ private:
 	CS230::Sprite flame_left;
 	CS230::Sprite flame_right;
 	bool flame_on = false;
-	bool exploded = false;
 
 	enum class Animations {
-		None,
-		Explosion
-	};
-	
-	enum class Flame_Animations {
 		Off,
 		On
 	};

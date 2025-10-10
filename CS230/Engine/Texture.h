@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2025 DigiPen Institute of Technology
+Copyright (C) 2023 DigiPen Institute of Technology
 Reproduction or distribution of this file or its contents without
 prior written consent is prohibited
 File Name:  Texture.h
@@ -16,34 +16,29 @@ Created:    March 18, 2025
 #include <raylib.h>
 
 namespace CS230 {
-    class Font;
+    class TextureManager;
 
     class Texture {
-    public:
         friend class TextureManager;
-        friend class Font;
 
-        void Draw(Math::TransformationMatrix display_matrix, unsigned int color = 0xFFFFFFFF);
-        void Draw(
-            Math::TransformationMatrix display_matrix,
-            Math::ivec2 texel_position,
-            Math::ivec2 frame_size,
-            unsigned int color = 0xFFFFFFFF
-        );
-        Math::ivec2 GetSize() const;
+    public:
+        Texture();
         ~Texture();
 
         Texture(const Texture&) = delete;
         Texture& operator=(const Texture&) = delete;
-
         Texture(Texture&& temporary) noexcept;
         Texture& operator=(Texture&& temporary) noexcept;
 
-    private:
-        Texture(Texture2D given_texture);
-        Texture(const std::filesystem::path& file_name);
+        //void Load(const std::filesystem::path& file_name);
+        void Draw(Math::TransformationMatrix display_matrix);
+        void Draw(Math::TransformationMatrix display_matrix, Math::ivec2 texel_position, Math::ivec2 frame_size);
+        Math::ivec2 GetSize() const;
 
-        Texture2D texture = {};
+    private:
+        Texture(const std::filesystem::path& file_name);
+        Texture2D texture;
+        unsigned int texture_id = 0;
+        std::string texture_name;
     };
 }
-

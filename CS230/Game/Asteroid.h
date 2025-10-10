@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2025 DigiPen Institute of Technology
+Copyright (C) 2023 DigiPen Institute of Technology
 Reproduction or distribution of this file or its contents without
 prior written consent is prohibited
 File Name:  Asteroid.h
@@ -9,17 +9,11 @@ Created:    March 24, 2025
 */
 
 #pragma once
-#include "../Engine/GameObject.h"
-#include "../GameObjectTypes.h"
-#include "../Engine/Timer.h"
+#include "..\Engine\GameObject.h"
 
 class Asteroid : public CS230::GameObject {
 public:
     Asteroid(Math::vec2 start_position);
-    GameObjectTypes Type() override { return GameObjectTypes::Asteroid; }
-    std::string TypeName() override { return "Asteroid"; }
-    void ResolveCollision(CS230::GameObject* other_object) override;
-    bool CanCollideWith(GameObjectTypes type) override;
 
 private:
     static constexpr double bounce_velocity = 500;
@@ -47,5 +41,5 @@ private:
         std::string GetName() override { return "Bouncing"; }
     };
 
-    State_Landing state_landing;
+    State_Landing state_land;
 };

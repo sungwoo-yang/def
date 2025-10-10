@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2025 DigiPen Institute of Technology
+Copyright (C) 2023 DigiPen Institute of Technology
 Reproduction or distribution of this file or its contents without
 prior written consent is prohibited
 File Name:  TextureManager.h
@@ -20,12 +20,7 @@ namespace CS230 {
         Texture* Load(const std::filesystem::path& file_name);
         void Unload();
 
-        void StartRenderTextureMode(int width, int height);
-        Texture* EndRenderTextureMode();
-
     private:
         std::map<std::filesystem::path, Texture*> textures;
-        std::vector<Texture*> rendered_textures;
     };
 }
-

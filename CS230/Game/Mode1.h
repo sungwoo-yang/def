@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2025 DigiPen Institute of Technology
+Copyright (C) 2023 DigiPen Institute of Technology
 Reproduction or distribution of this file or its contents without
 prior written consent is prohibited
 File Name:  Mode1.h
@@ -14,7 +14,8 @@ Created:    March 11, 2025
 #include "../Engine/Sprite.h"
 #include "../Engine/Vec2.h"
 #include "../Engine/Matrix.h"
-#include "../Engine/Font.h"
+#include "../Engine/GameObjectManager.h"
+#include "Background.h"
 
 class Cat;
 
@@ -30,14 +31,12 @@ public:
         return "Mode1";
     }
 
+    static constexpr double gravity = 800;
     static constexpr double floor = 80;
-    static constexpr double timer_max = 60;
 
 private:
+    CS230::GameObjectManager gameobjectmanager;
     Cat* cat_ptr;
-    CS230::Texture* timer_texture = nullptr;
-    CS230::Texture* score_texture = nullptr;
-    int last_timer;
-    void update_timer_text(int value);
-    void update_score_text(int value);
+    CS230::Camera camera;
+    Background background;
 };

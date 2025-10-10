@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2025 DigiPen Institute of Technology
+Copyright (C) 2023 DigiPen Institute of Technology
 Reproduction or distribution of this file or its contents without
 prior written consent is prohibited
 File Name:  Meteor.cpp
@@ -10,62 +10,31 @@ Created:    April 22, 2025
 
 #include "Meteor.h"
 #include "../Engine/Engine.h"
-#include "../Engine/Collision.h"
-#include "../Engine/Particle.h"
-#include "Particles.h"
-#include "Score.h"
 
-Meteor::Meteor() : Meteor(nullptr) {}
+Meteor::Meteor() : GameObject({0, 0}) {
+	sprite.Load("Assets/Meteor.spt");
 
-Meteor::Meteor(Meteor* parent) : CS230::GameObject({ 0, 0 }) {
-	AddGOComponent(new CS230::Sprite("Assets/Meteor.spt", this));
+	double random_vx = (static_cast<double>(rand()) / RAND_MAX) * default_velocity * 2 - default_velocity;
+	double random_vy = (static_cast<double>(rand()) / RAND_MAX) * default_velocity * 2 - default_velocity;
+	SetVelocity({ random_vx, random_vy });
 
-	if (parent == nullptr) {
-		Math::ivec2 win = Engine::GetWindow().GetSize();
-		Math::vec2 center = { win.x / 2.0, win.y / 2.0 };
-		Math::vec2 spawn_pos;
+	double pi = 3.14;
+	double random_angle = (static_cast<double>(rand()) / RAND_MAX) * pi * 2;
+	SetRotation(random_angle);
 
-		int side = rand() % 4;
-		double x = static_cast<double>(rand() % win.x);
-		double y = static_cast<double>(rand() % win.y);
-
-		switch (side) {
-		case 0: spawn_pos = Math::vec2{ x, -50.0 }; break;
-		case 1: spawn_pos = Math::vec2{ x, static_cast<double>(win.y) + 50.0 }; break;
-		case 2: spawn_pos = Math::vec2{ -50.0, y }; break;
-		case 3: spawn_pos = Math::vec2{ static_cast<double>(win.x) + 50.0, y }; break;
-		}
-
-		SetPosition(spawn_pos);
-		SetVelocity((center - spawn_pos).Normalize() * default_velocity);
-		SetRotation(((double)rand() / RAND_MAX) * 2 * PI);
-
-		size = default_size;
-	}
-	else {
-		SetVelocity(parent->GetVelocity());
-		SetPosition(parent->GetPosition());
-		SetRotation(parent->GetRotation());
-
-		size = parent->size - 1;
-	}
-	health = default_healths[size];
-	SetScale(Math::vec2{ default_scales[size], default_scales[size] });
+	double random_x = (static_cast<double>(rand()) / RAND_MAX) * Engine::GetWindow().GetSize().x;
+	double random_y = (static_cast<double>(rand()) / RAND_MAX) * Engine::GetWindow().GetSize().y;
+	SetPosition({ random_x, random_y });
 }
 
 void Meteor::Update(double dt) {
 	GameObject::Update(dt);
 
-	auto* sprite = GetGOComponent<CS230::Sprite>();
-	if (exploded && sprite->CurrentAnimation() == static_cast<int>(Animations::Fade) && sprite->AnimationEnded()) {
-		Destroy();
-	}
-
 	Math::vec2 pos = GetPosition();
 	Math::ivec2 screen = Engine::GetWindow().GetSize();
 
-	double half_width = GetGOComponent<CS230::Sprite>()->GetFrameSize().x / 2;
-	double half_height = GetGOComponent<CS230::Sprite>()->GetFrameSize().y / 2;
+	double half_width = sprite.GetFrameSize().x / 2;
+	double half_height = sprite.GetFrameSize().y / 2;
 
 	if (pos.x + half_width < 0) {
 		pos.x = screen.x + half_width;
@@ -84,51 +53,4 @@ void Meteor::Update(double dt) {
 	}
 
 	SetPosition(pos);
-}
-
-void Meteor::ResolveCollision(GameObject* other_object) {
-	UpdateVelocity(0.01 * other_object->GetVelocity());
-	health -= 1;
-
-	if (other_object->Type() == GameObjectTypes::Laser) {
-		Math::vec2 meteor_center = GetPosition();
-		Math::vec2 laser_pos = other_object->GetPosition();
-
-		auto sprite = GetGOComponent<CS230::Sprite>();
-		Math::vec2 frame_size = static_cast<Math::vec2>(sprite->GetFrameSize());
-		double approx_radius = frame_size.x / 2.0 * GetScale().x;
-
-		Math::vec2 normal = (laser_pos - meteor_center).Normalize();
-		Math::vec2 hit_pos = meteor_center + normal * approx_radius;
-
-		Engine::GetGameStateManager().GetGSComponent<CS230::ParticleManager<Particles::Hit>>()
-			->Emit(1, hit_pos, { 0, 0 }, normal * 100, PI / 6);
-
-		Engine::GetGameStateManager().GetGSComponent<CS230::ParticleManager<Particles::MeteorBit>>()
-			->Emit(5, hit_pos, { 0, 0 }, normal * 300, PI / 3);
-
-		other_object->Destroy();
-	}
-
-	if (health <= 0 && !exploded) {
-		exploded = true;
-
-		RemoveGOComponent<CS230::Collision>();
-		GetGOComponent<CS230::Sprite>()->PlayAnimation(static_cast<int>(Animations::Fade));
-		if (GetGOComponent<CS230::Sprite>()->AnimationEnded())
-			Destroy();
-
-		if (size > 0) {
-			Meteor* meteor_1 = new Meteor(this);
-			meteor_1->SetVelocity(Math::RotationMatrix(PI / 6) * GetVelocity());
-
-			Meteor* meteor_2 = new Meteor(this);
-			meteor_2->SetVelocity(Math::RotationMatrix(-PI / 6) * GetVelocity());
-
-			Engine::GetGameStateManager().GetGSComponent<Score>()->Add(10);
-
-			Engine::GetGameStateManager().GetGSComponent<CS230::GameObjectManager>()->Add(meteor_1);
-			Engine::GetGameStateManager().GetGSComponent<CS230::GameObjectManager>()->Add(meteor_2);
-		}
-	}
 }
