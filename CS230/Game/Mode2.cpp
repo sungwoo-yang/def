@@ -65,7 +65,7 @@ void Mode2::Update(double dt) {
 
     update_score_text(Engine::GetGameStateManager().GetGSComponent<Score>()->Value());
 
-    if (Engine::GetInput().KeyJustReleased(CS230::Input::Keys::ESC)) {
+    if (Engine::GetInput().KeyJustReleased(CS230::Input::Keys::Escape)) {
         Engine::GetGameStateManager().SetNextGameState(static_cast<int>(States::MainMenu));
     }
 }

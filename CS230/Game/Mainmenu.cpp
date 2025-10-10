@@ -72,7 +72,7 @@ void MainMenu::Update(double) {
         }
     }
 
-    if (Engine::GetInput().KeyJustReleased(CS230::Input::Keys::ESC)) {
+    if (Engine::GetInput().KeyJustReleased(CS230::Input::Keys::Escape)) {
         Engine::GetGameStateManager().ClearNextGameState();
     }
 }

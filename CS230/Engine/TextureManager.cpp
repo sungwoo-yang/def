@@ -1,57 +1,52 @@
-/*
-Copyright (C) 2025 DigiPen Institute of Technology
-Reproduction or distribution of this file or its contents without
-prior written consent is prohibited
-File Name:  TextureManager.cpp
-Project:    CS230 Engine
-Author:     Sungwoo Yang
-Created:    April 22, 2025
-*/
+/**
+ * \file
+ * \author Rudy Castan
+ * \author Jonathan Holmes
+ * \author Sungwoo Yang
+ * \date 2025 Fall
+ * \par CS200 Computer Graphics I
+ * \copyright DigiPen Institute of Technology
+ */
 
-#include "TextureManager.h"
-#include "Texture.h"
-#include "Engine.h"
+#include "TextureManager.hpp"
+#include "CS200/IRenderer2D.hpp"
+#include "CS200/NDC.hpp"
+#include "Engine.hpp"
+#include "Logger.hpp"
+#include "OpenGL/GL.hpp"
+#include "Texture.hpp"
 
-CS230::Texture* CS230::TextureManager::Load(const std::filesystem::path& file_name) {
-    auto it = textures.find(file_name);
-    if (it != textures.end()) {
-        return it->second;
+namespace CS230
+{
+    Texture* TextureManager::Load(const std::filesystem::path& file_name)
+    {
+        auto it = textures.find(file_name);
+        if (it != textures.end())
+        {
+            return it->second;
+        }
+
+        try
+        {
+            Texture* texture = new Texture(file_name);
+            textures.emplace(file_name, texture);
+            Engine::GetLogger().LogEvent("Loaded texture: " + file_name.string());
+            return texture;
+        }
+        catch (const std::exception& e)
+        {
+            Engine::GetLogger().LogError("Failed to load texture: " + file_name.string() + " Error: " + e.what());
+            return nullptr;
+        }
     }
 
-    Texture* texture = new Texture(file_name);
-    textures[file_name] = texture;
-
-    Engine::GetLogger().LogEvent("Loading Texture: " + file_name.string());
-    return  texture;
-}
-
-void CS230::TextureManager::Unload() {
-    for (auto& [file, texture] : textures) {
-        delete texture;
+    void TextureManager::Unload()
+    {
+        for (auto const& [path, texture] : textures)
+        {
+            delete texture;
+        }
+        textures.clear();
+        Engine::GetLogger().LogEvent("Unloaded all textures.");
     }
-    textures.clear();
-
-    Engine::GetLogger().LogEvent("Clearing Textures");
-}
-
-namespace {
-    RenderTexture2D s_render_texture = {};
-}
-
-void CS230::TextureManager::StartRenderTextureMode(int width, int height) {
-    s_render_texture = LoadRenderTexture(width, height);
-    BeginTextureMode(s_render_texture);
-    rlClearColor(0, 0, 0, 0);
-    rlClearScreenBuffers();
-}
-
-CS230::Texture* CS230::TextureManager::EndRenderTextureMode() {
-    EndTextureMode();
-    const auto window_size = Engine::GetWindow().GetSize();
-    rlSetFramebufferWidth(window_size.x);
-    rlSetFramebufferHeight(window_size.y);
-    rlUnloadFramebuffer(s_render_texture.id);
-    const auto result = new Texture{ s_render_texture.texture };
-    rendered_textures.push_back(result);
-    return result;
 }

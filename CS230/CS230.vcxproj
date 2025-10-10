@@ -153,6 +153,11 @@ xcopy /d /y Assets\* "$(OutputPath)Assets"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CS200\Image.cpp" />
+    <ClCompile Include="CS200\ImGuiHelper.cpp" />
+    <ClCompile Include="CS200\ImmediateRenderer2D.cpp" />
+    <ClCompile Include="CS200\Renderer2DUtils.cpp" />
+    <ClCompile Include="CS200\RenderingAPI.cpp" />
     <ClCompile Include="Engine\Animation.cpp" />
     <ClCompile Include="Engine\Camera.cpp" />
     <ClCompile Include="Engine\Collision.cpp" />
@@ -195,8 +200,21 @@ xcopy /d /y Assets\* "$(OutputPath)Assets"</Command>
       <RuntimeTypeInfo Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</RuntimeTypeInfo>
       <RuntimeTypeInfo Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</RuntimeTypeInfo>
     </ClCompile>
+    <ClCompile Include="OpenGL\Buffer.cpp" />
+    <ClCompile Include="OpenGL\GL.cpp" />
+    <ClCompile Include="OpenGL\Shader.cpp" />
+    <ClCompile Include="OpenGL\Texture.cpp" />
+    <ClCompile Include="OpenGL\VertexArray.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CS200\Image.hpp" />
+    <ClInclude Include="CS200\ImGuiHelper.hpp" />
+    <ClInclude Include="CS200\ImmediateRenderer2D.hpp" />
+    <ClInclude Include="CS200\IRenderer2D.hpp" />
+    <ClInclude Include="CS200\NDC.hpp" />
+    <ClInclude Include="CS200\Renderer2DUtils.hpp" />
+    <ClInclude Include="CS200\RenderingAPI.hpp" />
+    <ClInclude Include="CS200\RGBA.hpp" />
     <ClInclude Include="Engine\Animation.h" />
     <ClInclude Include="Engine\Camera.h" />
     <ClInclude Include="Engine\Collision.h" />
@@ -241,6 +259,15 @@ xcopy /d /y Assets\* "$(OutputPath)Assets"</Command>
     <ClInclude Include="Game\Ship.h" />
     <ClInclude Include="Game\Splash.h" />
     <ClInclude Include="Game\States.h" />
+    <ClInclude Include="OpenGL\Buffer.hpp" />
+    <ClInclude Include="OpenGL\Environment.hpp" />
+    <ClInclude Include="OpenGL\GL.hpp" />
+    <ClInclude Include="OpenGL\GLConstants.hpp" />
+    <ClInclude Include="OpenGL\GLTypes.hpp" />
+    <ClInclude Include="OpenGL\Handle.hpp" />
+    <ClInclude Include="OpenGL\Shader.hpp" />
+    <ClInclude Include="OpenGL\Texture.hpp" />
+    <ClInclude Include="OpenGL\VertexArray.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

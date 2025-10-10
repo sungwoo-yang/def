@@ -7,6 +7,12 @@
     <Filter Include="Game">
       <UniqueIdentifier>{7c6946bb-6ba6-4f6e-b9c6-411c1ba6f8b7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="OpenGL">
+      <UniqueIdentifier>{54607275-8c73-4945-a972-016105b2d105}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CS200">
+      <UniqueIdentifier>{a8674e16-4a82-4442-8438-edd529afc070}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -117,6 +123,36 @@
     </ClCompile>
     <ClCompile Include="Engine\Particle.cpp">
       <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenGL\Buffer.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenGL\GL.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenGL\Shader.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenGL\Texture.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenGL\VertexArray.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="CS200\Image.cpp">
+      <Filter>CS200</Filter>
+    </ClCompile>
+    <ClCompile Include="CS200\ImGuiHelper.cpp">
+      <Filter>CS200</Filter>
+    </ClCompile>
+    <ClCompile Include="CS200\ImmediateRenderer2D.cpp">
+      <Filter>CS200</Filter>
+    </ClCompile>
+    <ClCompile Include="CS200\Renderer2DUtils.cpp">
+      <Filter>CS200</Filter>
+    </ClCompile>
+    <ClCompile Include="CS200\RenderingAPI.cpp">
+      <Filter>CS200</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -249,6 +285,57 @@
     <ClInclude Include="GameObjectTypes.h" />
     <ClInclude Include="Game\Particles.h">
       <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenGL\Buffer.hpp">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenGL\Environment.hpp">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenGL\GL.hpp">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenGL\GLConstants.hpp">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenGL\GLTypes.hpp">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenGL\Handle.hpp">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenGL\Shader.hpp">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenGL\Texture.hpp">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenGL\VertexArray.hpp">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="CS200\Image.hpp">
+      <Filter>CS200</Filter>
+    </ClInclude>
+    <ClInclude Include="CS200\ImGuiHelper.hpp">
+      <Filter>CS200</Filter>
+    </ClInclude>
+    <ClInclude Include="CS200\ImmediateRenderer2D.hpp">
+      <Filter>CS200</Filter>
+    </ClInclude>
+    <ClInclude Include="CS200\IRenderer2D.hpp">
+      <Filter>CS200</Filter>
+    </ClInclude>
+    <ClInclude Include="CS200\NDC.hpp">
+      <Filter>CS200</Filter>
+    </ClInclude>
+    <ClInclude Include="CS200\Renderer2DUtils.hpp">
+      <Filter>CS200</Filter>
+    </ClInclude>
+    <ClInclude Include="CS200\RenderingAPI.hpp">
+      <Filter>CS200</Filter>
+    </ClInclude>
+    <ClInclude Include="CS200\RGBA.hpp">
+      <Filter>CS200</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
