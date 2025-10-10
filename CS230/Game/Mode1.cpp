@@ -106,7 +106,7 @@ void Mode1::Update(double dt) {
         Engine::GetGameStateManager().SetNextGameState(static_cast<int>(States::MainMenu));
     }
 
-    if (Engine::GetInput().KeyJustReleased(CS230::Input::Keys::Escape)) {
+    if (Engine::GetInput().KeyJustReleased(CS230::Input::Keys::ESC)) {
         Engine::GetGameStateManager().SetNextGameState(static_cast<int>(States::MainMenu));
     }
 
