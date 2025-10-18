@@ -7,58 +7,19 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 set(SOURCE_CODE 
 
-    CS200/Image.hpp CS200/Image.cpp
     CS200/ImGuiHelper.hpp CS200/ImGuiHelper.cpp
-    CS200/ImmediateRenderer2D.hpp CS200/ImmediateRenderer2D.cpp
-    CS200/IRenderer2D.hpp
-    CS200/NDC.hpp
-    CS200/Renderer2DUtils.hpp CS200/Renderer2DUtils.cpp
     CS200/RenderingAPI.hpp CS200/RenderingAPI.cpp
     CS200/RGBA.hpp
 
-    Game/Asteroid.hpp Game/Asteroid.cpp
-    Game/Background.hpp Game/Background.cpp
-    Game/Cat.hpp Game/Cat.cpp
-    Game/Crates.hpp Game/Crates.cpp
-    Game/Meteor.hpp Game/Meteor.cpp
-    Game/Mode1.hpp Game/Mode1.cpp
-    Game/Mode2.hpp Game/Mode2.cpp
-    Game/Robot.hpp Game/Robot.cpp
-    Game/Ship.hpp Game/Ship.cpp
-    Game/Splash.hpp Game/Splash.cpp
-    Game/States.hpp
-
-    Engine/Animation.hpp Engine/Animation.cpp
-    Engine/Camera.hpp Engine/Camera.cpp
     Engine/Engine.hpp Engine/Engine.cpp
     Engine/Error.hpp
-    Engine/FPS.hpp
-    Engine/GameObject.hpp Engine/GameObject.cpp
-    Engine/GameObjectManager.hpp Engine/GameObjectManager.cpp
-    Engine/GameState.hpp
-    Engine/GameStateManager.hpp Engine/GameStateManager.cpp
     Engine/Input.hpp Engine/Input.cpp
     Engine/Logger.hpp Engine/Logger.cpp
-    Engine/Matrix.hpp Engine/Matrix.cpp
     Engine/Path.hpp Engine/Path.cpp
-    Engine/Random.hpp Engine/Random.cpp
-    Engine/Rect.hpp
-    Engine/Sprite.hpp Engine/Sprite.cpp
-    Engine/Texture.hpp Engine/Texture.cpp
-    Engine/TextureManager.hpp Engine/TextureManager.cpp
-    Engine/Timer.hpp
     Engine/Vec2.hpp Engine/Vec2.cpp
     Engine/Window.hpp Engine/Window.cpp
 
-    OpenGL/Buffer.hpp OpenGL/Buffer.cpp
     OpenGL/Environment.hpp
-    OpenGL/GL.cpp OpenGL/GL.hpp
-    OpenGL/GLConstants.hpp
-    OpenGL/GLTypes.hpp
-    OpenGL/Handle.hpp
-    OpenGL/Shader.cpp OpenGL/Shader.hpp
-    OpenGL/Texture.hpp OpenGL/Texture.cpp
-    OpenGL/VertexArray.cpp OpenGL/VertexArray.hpp
 
     main.cpp
 )

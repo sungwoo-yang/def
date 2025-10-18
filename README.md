@@ -1,4 +1,6 @@
-# CS200 Computer Graphics I
+# CS200 Computer Graphics I HW 1
+
+📋 **[View Assignment Requirements](Assignment.md)**
 
 ## How to Build and Run
 
@@ -58,7 +60,7 @@ python3 scripts/scan_build_project.py --help
 
 This project supports three distinct build configurations, each designed for different stages of development and deployment:
 
-### **Debug Configuration**
+### 🐛 **Debug Configuration**
 - **Purpose**: Active development and debugging
 - **Features**: 
   - Allows setting breakpoints to step through code line-by-line
@@ -68,7 +70,7 @@ This project supports three distinct build configurations, each designed for dif
 - **Performance**: Slower execution, larger executable size
 - **When to use**: When you need to debug issues or understand code flow
 
-### **Developer-Release Configuration**  
+### ⚡ **Developer-Release Configuration**  
 - **Purpose**: Testing with optimized performance while keeping developer tools
 - **Features**:
   - Compiler optimizations enabled (faster execution)
@@ -79,7 +81,7 @@ This project supports three distinct build configurations, each designed for dif
 - **Performance**: Fast execution, optimized code
 - **When to use**: Performance testing while retaining diagnostic capabilities
 
-### **Release Configuration**
+### 🚀 **Release Configuration**
 - **Purpose**: Final builds for end users
 - **Features**:
   - Full compiler optimizations

@@ -18,7 +18,6 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 TODO_PATTERN = re.compile(r'TODO|FIXME', re.IGNORECASE)
-OPENGL_PATTERN = re.compile(r'\b(gl[A-Z][a-zA-Z0-9_]*)\(')
 
 # ANSI color codes for better output
 class Colors:
@@ -166,57 +165,29 @@ def find_todo_comments(file_path):
         lines = file.readlines()
     return [(i + 1, line.strip()) for i, line in enumerate(lines) if TODO_PATTERN.search(line)]
 
-def find_opengl_usage(file_path):
-    if file_path.endswith('GL.cpp'):
-        return []
-    with open(file_path, 'r', encoding='utf-8') as file:
-        lines = file.readlines()
-    return [(i + 1, match) for i, line in enumerate(lines) for match in OPENGL_PATTERN.findall(line)]
-
-def scan_file(file_path, skip_todos=False, skip_opengl=False):
+def scan_file(file_path):
     log_output = []
-    todos = find_todo_comments(file_path) if not skip_todos else []
-    opengl_issues = find_opengl_usage(file_path) if not skip_opengl and file_path.endswith((".cpp", ".hpp", ".h")) else []
+    todos = find_todo_comments(file_path)
 
     if todos:
         log_output.append(f"[TODO Found] {file_path}")
         for line, comment in todos:
             log_output.append(f"  Line {line}: {comment}")
 
-    if opengl_issues:
-        log_output.append(f"[Bad OpenGL Usage] {file_path}")
-        for line, func in opengl_issues:
-            log_output.append(f"  Line {line}: {func} should be wrapped (e.g., GL::{func[2:]})")
-
     if log_output:
-        colored_print("\n".join(log_output), Colors.YELLOW if todos else Colors.RED)
+        colored_print("\n".join(log_output), Colors.YELLOW)
 
-    return bool(todos), bool(opengl_issues)
+    return bool(todos)
 
-def scan_directory(directory, skip_todos=False, skip_opengl=False):
-    if skip_todos and skip_opengl:
-        colored_print("⏭️  Skipping all scanning (--skip-todos and --skip-opengl flags used)", Colors.YELLOW)
-        return
-        
+def scan_directory(directory, skip_todos=False):
     if skip_todos:
         colored_print("⏭️  Skipping TODO scan (--skip-todos flag used)", Colors.YELLOW)
-    
-    if skip_opengl:
-        colored_print("⏭️  Skipping OpenGL scan (--skip-opengl flag used)", Colors.YELLOW)
+        return
         
-    has_todo, has_opengl_issue = False, False
-    scan_title = "TODO/FIXME"
-    if not skip_todos and not skip_opengl:
-        scan_title = "TODO/FIXME & OpenGL SCAN"
-    elif not skip_todos:
-        scan_title = "TODO/FIXME SCAN"
-    elif not skip_opengl:
-        scan_title = "OpenGL SCAN"
-    
-    if not skip_todos or not skip_opengl:
-        print_separator(scan_title)
-        colored_print(f"📁 Scanning directory: {directory}", Colors.BLUE, bold=True)
-        print()
+    has_todo = False
+    print_separator("TODO/FIXME SCAN")
+    colored_print(f"📁 Scanning directory: {directory}", Colors.BLUE, bold=True)
+    print()
     
     scanned_files = 0
     with ThreadPoolExecutor() as executor:
@@ -227,32 +198,18 @@ def scan_directory(directory, skip_todos=False, skip_opengl=False):
             for file in files:
                 if file.endswith((".cpp", ".hpp", ".h", ".vert", ".frag", ".cmake", ".txt", ".html")):
                     file_path = os.path.join(root, file)
-                    futures.append(executor.submit(scan_file, file_path, skip_todos, skip_opengl))
+                    futures.append(executor.submit(scan_file, file_path))
                     scanned_files += 1
         
         for future in futures:
-            todo_found, opengl_issue_found = future.result()
+            todo_found = future.result()
             has_todo |= todo_found
-            has_opengl_issue |= opengl_issue_found
     
     if has_todo:
         colored_print(f"\n❌ TODO comments found in {scanned_files} scanned files. Fix them before proceeding.", Colors.RED, bold=True)
-    
-    if has_opengl_issue:
-        colored_print(f"\n❌ Bad OpenGL usage found in {scanned_files} scanned files. Fix them before proceeding.", Colors.RED, bold=True)
-
-    if has_todo or has_opengl_issue:
         sys.exit(1)
-    elif not skip_todos or not skip_opengl:
-        success_msg = "✅ No "
-        if not skip_todos and not skip_opengl:
-            success_msg += "TODO/FIXME comments or bad OpenGL usage"
-        elif not skip_todos:
-            success_msg += "TODO/FIXME comments"
-        elif not skip_opengl:
-            success_msg += "bad OpenGL usage"
-        success_msg += f" found in {scanned_files} scanned files!"
-        colored_print(success_msg, Colors.GREEN, bold=True)
+    else:
+        colored_print(f"✅ No TODO/FIXME comments found in {scanned_files} scanned files!", Colors.GREEN, bold=True)
 
 def windows_to_wsl_path(win_path: str) -> str:
     win_path = os.path.abspath(win_path)
@@ -266,8 +223,8 @@ def windows_to_wsl_path(win_path: str) -> str:
 def run_cmake_command(folder, build_type, target):
     linux_prefix = []
     build_dir = os.path.join(folder, f'build/{target}-{build_type.lower()}')
-
-    if platform.system() == "Windows" and (target == "web" or target == "linux"):
+    
+    if platform.system() == "Windows" and target == "web":
         linux_prefix = ['wsl']
         folder = windows_to_wsl_path(folder)
         build_dir = windows_to_wsl_path(build_dir)
@@ -331,7 +288,7 @@ def build_project(folder, target_filter=None, build_type_filter=None):
     total_start_time = time.time()
     
     build_types = ['debug', 'developer-release', 'release']
-    targets = ['windows', 'web', 'linux'] if platform.system() == "Windows" else ['linux', 'web']
+    targets = ['windows', 'web'] if platform.system() == "Windows" else ['linux', 'web']
     
     # Apply filters
     if target_filter:
@@ -504,10 +461,6 @@ def main():
 Examples:
   %(prog)s                                    # Scan and build all configurations
   %(prog)s --skip-todos                       # Skip TODO scan, build all
-  %(prog)s --skip-opengl                      # Skip OpenGL scan, build all
-  %(prog)s --skip-build                       # Scan only, no building
-  %(prog)s --skip-todos --skip-opengl         # Skip all scans, build only
-  %(prog)s --skip-build --skip-opengl         # TODO scan only
   %(prog)s --target linux web                # Build only linux and web targets
   %(prog)s --build-type debug release        # Build only debug and release configurations
   %(prog)s --target web --build-type debug   # Build only web debug configuration
@@ -517,10 +470,6 @@ Examples:
                         help="Project directory (default: current working directory)")
     parser.add_argument("--skip-todos", action="store_true", 
                         help="Skip TODO/FIXME scanning")
-    parser.add_argument("--skip-opengl", action="store_true", 
-                        help="Skip OpenGL usage scanning")
-    parser.add_argument("--skip-build", action="store_true", 
-                        help="Skip building the project (scan only)")
     parser.add_argument("--target", nargs="+", choices=['linux', 'windows', 'web'],
                         help="Build only specified targets")
     parser.add_argument("--build-type", nargs="+", choices=['debug', 'developer-release', 'release'],
@@ -532,12 +481,8 @@ Examples:
     colored_print(f"🚀 Starting project analysis and build", Colors.BLUE, bold=True)
     colored_print(f"📁 Working directory: {args.directory}", Colors.WHITE)
     
-    scan_directory(args.directory, skip_todos=args.skip_todos, skip_opengl=args.skip_opengl)
-    
-    if not args.skip_build:
-        build_project(args.directory, target_filter=args.target, build_type_filter=args.build_type)
-    else:
-        colored_print("\n⏭️  Skipping build process (--skip-build flag used)", Colors.YELLOW, bold=True)
+    scan_directory(args.directory, skip_todos=args.skip_todos)
+    build_project(args.directory, target_filter=args.target, build_type_filter=args.build_type)
 
 if __name__ == "__main__":
     if sys.stdout.encoding.lower() != "utf-8":
