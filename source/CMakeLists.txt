@@ -16,12 +16,6 @@ set(SOURCE_CODE
     CS200/RenderingAPI.hpp CS200/RenderingAPI.cpp
     CS200/RGBA.hpp
 
-    Demo/DemoAstar.hpp Demo/DemoAstar.cpp
-    Demo/DemoReflection.hpp Demo/DemoReflection.cpp
-
-    Engine/Physics/Reflection.hpp Engine/Physics/Reflection.cpp
-    Engine/Dash.hpp Engine/Dash.cpp
-
     Engine/Animation.hpp Engine/Animation.cpp
     Engine/Camera.hpp Engine/Camera.cpp
     Engine/Collision.hpp Engine/Collision.cpp
@@ -39,9 +33,12 @@ set(SOURCE_CODE
     Engine/GameStateManager.hpp Engine/GameStateManager.cpp
     Engine/Input.hpp Engine/Input.cpp
     Engine/Logger.hpp Engine/Logger.cpp
+    Engine/MapManager.h Engine/MapManager.cpp
+    Engine/MapElement.h Engine/MapElement.cpp
     Engine/Matrix.hpp Engine/Matrix.cpp
     Engine/Particle.hpp Engine/Particle.cpp
     Engine/Path.hpp Engine/Path.cpp
+    Engine/Polygon.h
     Engine/Random.hpp Engine/Random.cpp
     Engine/Rect.hpp
     Engine/ShowCollision.hpp Engine/ShowCollision.cpp
@@ -51,6 +48,9 @@ set(SOURCE_CODE
     Engine/Timer.hpp
     Engine/Vec2.hpp Engine/Vec2.cpp
     Engine/Window.hpp Engine/Window.cpp
+     
+    Game/Mode1.h Game/mode1.cpp
+
 
     OpenGL/Buffer.hpp OpenGL/Buffer.cpp
     OpenGL/Environment.hpp
@@ -74,9 +74,13 @@ target_include_directories(ASTAR PRIVATE .)
 
 # Check the IS_DEVELOPER_VERSION cache variable
 # This is set by the cmake configure preset
-if (IS_DEVELOPER_VERSION)
-    target_compile_definitions(ASTAR PRIVATE DEVELOPER_VERSION)
-endif()
+#if (IS_DEVELOPER_VERSION)
+#target_compile_definitions(ASTAR PRIVATE DEVELOPER_VERSION)
+#endif()
+
+target_compile_definitions(ASTAR PRIVATE
+    $<$<CONFIG:Debug>:DEVELOPER_VERSION>
+)
 
 if(EMSCRIPTEN)
 

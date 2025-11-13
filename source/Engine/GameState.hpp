@@ -19,7 +19,7 @@ namespace CS230
         virtual void          Load()            = 0;
         virtual void          Update(double dt) = 0;
         virtual void          Unload()          = 0;
-        virtual void          Draw() const      = 0;
+        virtual void          Draw()            = 0;
         virtual void          DrawImGui()       = 0;
         virtual gsl::czstring GetName() const   = 0;
         virtual ~GameState()                    = default;

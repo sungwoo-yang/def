@@ -18,5 +18,5 @@ enum class GameObjectTypes {
     Portal,
     Count,
     Laser,
-    Particle
+    Particle,
 };

@@ -46,9 +46,22 @@ namespace Math
 
         double Length() const;
         vec2   Normalize() const;
+
+        double Dot(const vec2& v) const;
     };
 
     vec2 operator*(double scale, const vec2& v);
+
+    inline double dot(const vec2& v1, const vec2& v2)
+    {
+        return v1.x * v2.x + v1.y * v2.y;
+    }
+
+    // 2D 벡터의 법선 (시계방향 90도 회전)
+    inline vec2 GetPerpendicular(const vec2& v)
+    {
+        return { v.y, -v.x };
+    }
 
     struct ivec2
     {

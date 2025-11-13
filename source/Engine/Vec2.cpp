@@ -92,6 +92,11 @@ namespace Math
         return { 0.0, 0.0 };
     }
 
+    double vec2::Dot(const vec2& v) const
+    {
+        return x * v.x + y * v.y;
+    }
+
     vec2 operator*(double scale, const vec2& v)
     {
         return { scale * v.x, scale * v.y };

@@ -9,6 +9,7 @@
 #pragma once
 #include "Component.hpp"
 #include "Rect.hpp"
+#include "Polygon.h"
 
 namespace Math
 {
@@ -25,7 +26,8 @@ namespace CS230
         enum class CollisionShape
         {
             Rect,
-            Circle
+            Circle,
+            Poly
         };
         virtual CollisionShape Shape()                                                = 0;
         virtual void           Draw(const Math::TransformationMatrix& display_matrix) = 0;
@@ -70,6 +72,27 @@ namespace CS230
 
     private:
         double      radius;
+        GameObject* object;
+
+    };
+
+    class SATCollision : public Collision
+    {
+    public:
+        SATCollision(Polygon boundary, GameObject* obj);
+
+        CollisionShape Shape() override
+        {
+            return CollisionShape::Poly;
+        }
+
+        void         Draw(const Math::TransformationMatrix& display_matrix) override;
+        Polygon      WorldBoundary(); // <--- ¿ùµå ÁÂÇ¥ Æú¸®°ï ¹ÝÈ¯
+        bool         IsCollidingWith(GameObject* other_object) override;
+        virtual bool IsCollidingWith(Math::vec2 point) override;
+
+    private:
+        Polygon     boundary; // ·ÎÄÃ ÁÂÇ¥ ´Ù°¢Çü
         GameObject* object;
     };
 }

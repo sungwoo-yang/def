@@ -447,11 +447,6 @@ void DemoAstar::DrawImGui()
             Engine::GetGameStateManager().PopState();
             Engine::GetGameStateManager().PushState<DemoLaserReflection>();
         }
-        if (ImGui::Button("Switch to Demo Shapes"))
-        {
-            Engine::GetGameStateManager().PopState();
-            Engine::GetGameStateManager().PushState<DemoShapes>();
-        }
     }
     ImGui::End();
 }

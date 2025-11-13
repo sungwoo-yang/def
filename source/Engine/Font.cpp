@@ -60,7 +60,7 @@ namespace CS230
             return;
         }
 
-        int         last_x_pos   = 1; // 첫 문자는 x=1부터 시작 (x=0은 경계)
+        int         last_x_pos   = 1; 
         CS200::RGBA last_color   = GetPixel({ 0, 0 });
         char        current_char = ' ';
 
@@ -71,7 +71,6 @@ namespace CS230
             {
                 if (current_char <= 'z')
                 {
-                    // 구분선(y=0) 제외 → 글리프는 y=1부터 시작
                     char_rects[current_char - ' '] = Math::irect{
                         { last_x_pos,      1 },
                         {          x, size.y }
@@ -87,7 +86,6 @@ namespace CS230
             }
         }
 
-        // 마지막 문자
         if (current_char <= 'z' && last_x_pos < size.x)
         {
             char_rects[current_char - ' '] = Math::irect{
@@ -151,12 +149,10 @@ namespace CS230
     {
         CleanupCache();
 
-        // 캐시 키 구성
         char color_str[16];
         snprintf(color_str, sizeof(color_str), "%08X", color);
         std::string cache_key = text + "_" + color_str;
 
-        // 캐시 히트
         if (auto it = text_cache.find(cache_key); it != text_cache.end())
         {
             cache_timestamps[cache_key] = Engine::GetWindowEnvironment().FrameCount;

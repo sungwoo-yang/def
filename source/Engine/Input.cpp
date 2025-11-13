@@ -53,8 +53,6 @@ namespace
             case CS230::Input::Keys::Down: return SDL_SCANCODE_DOWN;
             case CS230::Input::Keys::Escape: return SDL_SCANCODE_ESCAPE;
             case CS230::Input::Keys::Tab: return SDL_SCANCODE_TAB;
-            case CS230::Input::Keys::LShift: return SDL_SCANCODE_LSHIFT;
-            case CS230::Input::Keys::Rshift: return SDL_SCANCODE_RSHIFT;
             default: return SDL_SCANCODE_UNKNOWN;
         }
     }
