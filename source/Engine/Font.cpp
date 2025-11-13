@@ -60,7 +60,7 @@ namespace CS230
             return;
         }
 
-        int         last_x_pos   = 1; 
+        int         last_x_pos   = 1;
         CS200::RGBA last_color   = GetPixel({ 0, 0 });
         char        current_char = ' ';
 

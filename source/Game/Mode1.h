@@ -9,7 +9,7 @@ public:
     void Load() override;
     void Update(double dt) override;
     void Unload() override;
-    void Draw()   override;
+    void Draw() override;
 
     void DrawImGui() override
     {

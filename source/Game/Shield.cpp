@@ -1,14 +1,15 @@
 #include "Game/Shield.hpp"
-#include "CS200/IRenderer2D.hpp"
-#include "Engine/Engine.hpp"
 #include "Engine/GameObject.hpp"
+#include "Engine/Engine.hpp"
 #include "Engine/Input.hpp"
 #include "Engine/Logger.hpp"
+#include "CS200/IRenderer2D.hpp"
 #include "Engine/Matrix.hpp"
-#include <algorithm>
 #include <cmath>
-#include <stdexcept>
+#include <algorithm>
+#include <stdexcept> // std::runtime_error
 
+// DemoReflection.cpp의 'ease_color_to_target' 헬퍼 함수
 namespace
 {
     template <typename FLOAT = double>
@@ -26,17 +27,14 @@ namespace
         };
         auto add_assign = [&](std::array<float, 4>& a, const std::array<float, 4>& b) -> std::array<float, 4>&
         {
-            a[0] += b[0];
-            a[1] += b[1];
-            a[2] += b[2];
-            a[3] += b[3];
+            a[0] += b[0]; a[1] += b[1]; a[2] += b[2]; a[3] += b[3];
             return a;
         };
 
         const auto easing = std::min(delta_time * weight, static_cast<FLOAT>(1.0));
         add_assign(current, multiply(easing, subtract(target, current)));
     }
-}
+} // 익명 네임스페이스 끝
 
 Shield::Shield(CS230::GameObject* owner)
     : owner(owner), shieldHitTimer(shieldColorRecoveryTime)
@@ -88,7 +86,7 @@ void Shield::TryParry()
     if (parryWindowActive && !isShieldFrozen)
     {
         isParrying = true;
-        Engine::GetLogger().LogEvent("Parry Input Success!");
+        CS230::Engine::GetLogger().LogEvent("Parry Input Success!");
     }
 }
 
@@ -180,7 +178,7 @@ void Shield::UpdateShieldColor(double dt)
         if (shieldHitTimer >= shieldColorRecoveryTime)
         {
             // 복구 시간이 되면 기본 색상(시안)으로 타겟 변경
-            targetShieldColor = CS200::unpack_color(CS200::CYAN);
+            targetShieldColor = CS200::unpack_color(COLOR_CYAN);
         }
     }
     else
