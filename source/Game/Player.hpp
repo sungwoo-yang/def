@@ -49,7 +49,6 @@ public:
     bool CanCollideWith(GameObjectTypes other_object_type) override;
     void ResolveCollision(CS230::GameObject* other_object) override;
 
-    void UpdateAnimation(double dt);
     void ResetState();
     void SetSavePoint(Math::vec2 new_spawn_point);
 
@@ -67,6 +66,7 @@ public:
     bool                  faceRight            = true;
 
     CS230::GameObject* interactionTarget;
+    bool               isInteracting;
 
 private:
     void HandleInput(double dt);

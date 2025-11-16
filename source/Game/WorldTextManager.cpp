@@ -39,8 +39,8 @@ Math::vec2 WorldTextManager::WorldToScreen(Math::vec2 worldPos)
     // 3. NDC (-1 ~ +1)를 ImGui 화면 좌표 (0 ~ WindowSize)로 변환합니다.
     // (ImGui의 Y좌표는 위에서 아래로 증가하므로 (1.0 - ndcPos.y) 사용)
     Math::ivec2 winSize = Engine::GetWindow().GetSize();
-    double      screenX = (ndcPos.x + 1.0f) * 0.5f * winSize.x;
-    double      screenY = (1.0f - ndcPos.y) * 0.5f * winSize.y;
+    float       screenX = (static_cast<float>(ndcPos.x) + 1.0f) * 0.5f * winSize.x;
+    float       screenY = (1.0f - static_cast<float>(ndcPos.y)) * 0.5f * winSize.y;
 
     return { screenX, screenY };
 }
@@ -51,16 +51,16 @@ void WorldTextManager::ShowTextAbove(CS230::GameObject* obj, const std::string& 
     if (obj == nullptr)
         return;
 
-    Math::vec2 worldPos = obj->GetPosition();
+    Math::vec2 pos      = obj->GetPosition();
     // 충돌체 정보를 가져와서 정확한 상단 위치를 계산합니다.
     auto       collider = obj->GetGOComponent<CS230::RectCollision>();
     if (collider)
     {
-        worldPos.x = obj->GetPosition().x;                   // 중심 X 사용
-        worldPos.y = collider->WorldBoundary().Top() + 10.0; // 충돌체 상단 + 10px
+        pos.x = obj->GetPosition().x;                   // 중심 X 사용
+        pos.y = collider->WorldBoundary().Top() + 15.0; // 충돌체 상단 + 15px
     }
 
-    textJobs.push_back({ text, worldPos, true });
+    textJobs.push_back({ text, pos, true });
 }
 
 // 오브젝트의 충돌체 하단 10px 아래에 텍스트 표시
@@ -69,15 +69,15 @@ void WorldTextManager::ShowTextBelow(CS230::GameObject* obj, const std::string& 
     if (obj == nullptr)
         return;
 
-    Math::vec2 worldPos = obj->GetPosition();
+    Math::vec2 pos      = obj->GetPosition();
     auto       collider = obj->GetGOComponent<CS230::RectCollision>();
     if (collider)
     {
-        worldPos.x = obj->GetPosition().x;                      // 중심 X 사용
-        worldPos.y = collider->WorldBoundary().Bottom() - 10.0; // 충돌체 하단 - 10px
+        pos.x = obj->GetPosition().x;                      // 중심 X 사용
+        pos.y = collider->WorldBoundary().Bottom() - 15.0; // 충돌체 하단 - 15px
     }
 
-    textJobs.push_back({ text, worldPos, false });
+    textJobs.push_back({ text, pos, false });
 }
 
 void WorldTextManager::DrawImGui()
@@ -85,7 +85,6 @@ void WorldTextManager::DrawImGui()
     if (textJobs.empty())
         return;
 
-    // ImGui의 포그라운드 드로우 리스트를 사용하여 텍스트를 직접 그립니다.
     ImDrawList* draw_list = ImGui::GetForegroundDrawList();
 
     for (const auto& job : textJobs)

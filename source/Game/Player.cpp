@@ -23,8 +23,8 @@ namespace
 
 Player::Player(Math::vec2 start_pos)
     : CS230::GameObject(start_pos), startPosition(start_pos), previousPosition(start_pos), shieldComponent(nullptr), isSprinting(false), shiftHoldTimer(0.0), isJumping(true),
-      currentPlatformIndex(std::nullopt), velocityY(0.0), faceRight(true), interactionTarget(nullptr), gravity(1500.0), jumpStrength(700.0), baseSpeed(300.0), sprintSpeedMultiplier(1.8),
-      sprintActivationTime(0.5)
+      currentPlatformIndex(std::nullopt), velocityY(0.0), faceRight(true), interactionTarget(nullptr), isInteracting(false), gravity(1500.0), jumpStrength(700.0), baseSpeed(300.0),
+      sprintSpeedMultiplier(1.8), sprintActivationTime(0.5)
 {
     shieldComponent = new Shield(this);
     AddGOComponent(shieldComponent);
@@ -49,6 +49,7 @@ void Player::ResetState()
     isSprinting                     = false;
     shiftHoldTimer                  = 0.0;
     interactionTarget               = nullptr;
+    isInteracting                   = false;
 
     if (shieldComponent != nullptr)
     {
@@ -56,6 +57,12 @@ void Player::ResetState()
     }
     shieldComponent = new Shield(this);
     AddGOComponent(shieldComponent);
+}
+
+void Player::SetSavePoint(Math::vec2 new_spawn_point)
+{
+    startPosition = new_spawn_point;
+    Engine::GetLogger().LogEvent("Player save point updated!");
 }
 
 void Player::Update(double dt)
@@ -108,8 +115,7 @@ void Player::HandleInput(double dt)
     {
         if (interactionTarget != nullptr)
         {
-            // 상호작용 대상이 있다면 Interact 함수 호출
-            interactionTarget->Interact(this);
+            isInteracting = true;
         }
     }
 
@@ -195,7 +201,7 @@ bool Player::CanCollideWith(GameObjectTypes other_object_type)
     return false;
 }
 
-void Player::ResolveCollision(CS230::GameObject* other_object)
+void Player::ResolveCollision(GameObject* other_object)
 {
     // WorldTextManager를 가져옵니다.
     auto textManager = Engine::GetGameStateManager().GetGSComponent<WorldTextManager>();
@@ -237,7 +243,6 @@ void Player::ResolveCollision(CS230::GameObject* other_object)
             else
                 SetPosition({ GetPosition().x + overlap_right, GetPosition().y });
 
-
             SetVelocity({ 0.0, GetVelocity().y });
         }
     }
@@ -250,7 +255,16 @@ void Player::ResolveCollision(CS230::GameObject* other_object)
         // "Press 'F'" 프롬프트를 오브젝트 '아래'에 요청
         if (textManager != nullptr)
         {
-            textManager->ShowTextBelow(other_object, "Press 'F'");
+            if (isInteracting == true)
+            {
+                // 2. 이미 F키를 누른 상태라면, 튜토리얼/자막을 계속 띄움
+                other_object->Interact(this);
+            }
+            else
+            {
+                // 3. F키를 누르지 않았다면, "Press 'F'" 프롬프트를 띄움
+                textManager->ShowTextBelow(other_object, "Press 'F'");
+            }
         }
     }
 }
@@ -267,5 +281,5 @@ void Player::Draw(const Math::TransformationMatrix& camera_matrix)
         shieldComponent->Draw(renderer, camera_matrix);
     }
 
-    GameObject::Draw(camera_matrix);
+    CS230::GameObject::Draw(camera_matrix);
 }

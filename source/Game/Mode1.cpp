@@ -41,7 +41,7 @@ void Mode1::Load()
 
     // 요청하신 표지판들을 생성합니다. (Y 좌표는 플랫폼 높이에 맞게 조정해야 합니다)
     auto       gom      = GetGSComponent<CS230::GameObjectManager>();
-    Math::vec2 signSize = { 50, 25.0 }; // 표지판 기본 크기
+    Math::vec2 signSize = { 50.0, 25.0 }; // 표지판 기본 크기
 
     // SVG 로딩이 실제로는 비어있으므로, y=300을 플랫폼 상단으로 가정하고 배치합니다.
     double platformY = 200;
@@ -55,7 +55,7 @@ void Mode1::Load()
     gom->Add(new Sign({ 1900.0, signY2 }, signSize, "LShift to Dash"));
 
     // 모닥불 (Bonfire)
-    Math::vec2 bonfireSize = { 10.0, 10.0 };
+    Math::vec2 bonfireSize = { 25.0, 25.0 };
     double     bonfireY    = platformY2 + (bonfireSize.y / 2.0);
     gom->Add(new Bonfire({ 900.0, bonfireY }, bonfireSize));
 
@@ -70,11 +70,21 @@ void Mode1::Update(double dt)
 
     if (player != nullptr)
     {
-        Math::vec2 targetPos = player->GetPosition() - Math::vec2{ Engine::GetWindow().GetSize().x / 2.0, Engine::GetWindow().GetSize().y / 2.0 };
-        camera->SetPosition(targetPos);
+        player->interactionTarget = nullptr; // <--- 여기에 초기화 코드를 추가
     }
 
     GetGSComponent<CS230::GameObjectManager>()->CollisionTest();
+
+    if (player != nullptr && player->interactionTarget == nullptr)
+    {
+        player->isInteracting = false;
+    }
+
+    if (player != nullptr)
+    {
+        Math::vec2 targetPos = player->GetPosition() - Math::vec2{ Engine::GetWindow().GetSize().x / 2.0, Engine::GetWindow().GetSize().y / 2.0 };
+        camera->SetPosition(targetPos);
+    }
 }
 
 void Mode1::Draw()

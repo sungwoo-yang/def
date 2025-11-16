@@ -1,10 +1,11 @@
-#include "Sign.hpp"
+#include "Game/Sign.hpp"
 #include "CS200/IRenderer2D.hpp"
 #include "CS200/RGBA.hpp"
 #include "Engine/Collision.hpp"
 #include "Engine/Engine.hpp"
 #include "Engine/GameStateManager.hpp"
-#include "WorldTextManager.hpp" // 새로 만든 텍스트 매니저
+#include "Engine/Input.hpp"
+#include "Game/WorldTextManager.hpp"
 
 Sign::Sign(Math::vec2 start_pos, Math::vec2 size, std::string msg) : CS230::GameObject(start_pos), signSize(size), message(std::move(msg)) // msg를 message 멤버에 저장
 {
@@ -38,5 +39,9 @@ void Sign::Interact([[maybe_unused]] CS230::GameObject* interactor)
         textManager->ShowTextAbove(this, message);
     }
 
-    Engine::GetLogger().LogEvent("Event: Sign interacted, showing: " + message);
+    // F키를 누른 첫 프레임에만 로그를 남깁니다.
+    if (Engine::GetInput().KeyJustPressed(CS230::Input::Keys::F))
+    {
+        Engine::GetLogger().LogEvent("Event: Sign interacted, showing: " + message);
+    }
 }
