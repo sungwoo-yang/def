@@ -14,6 +14,7 @@ enum class GameObjectTypes
     Laser,
     Target,
     Sign,
+    Bonfire,
     Particle,
     Count
 };

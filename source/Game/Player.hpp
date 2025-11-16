@@ -51,6 +51,7 @@ public:
 
     void UpdateAnimation(double dt);
     void ResetState();
+    void SetSavePoint(Math::vec2 new_spawn_point);
 
     Shield* GetShield() const
     {
@@ -64,7 +65,8 @@ public:
     std::optional<size_t> currentPlatformIndex = std::nullopt;
     double                velocityY            = 0.0;
     bool                  faceRight            = true;
-    CS230::GameObject*    interactionTarget    = nullptr;
+
+    CS230::GameObject* interactionTarget;
 
 private:
     void HandleInput(double dt);
@@ -73,11 +75,12 @@ private:
     Shield* shieldComponent;
 
     // 물리 상태
-    double       gravity               = 1500.0;
-    double       jumpStrength          = 700.0;
-    const double baseSpeed             = 300.0;
-    const double sprintSpeedMultiplier = 1.8;
-    const double sprintActivationTime  = 0.5;
-    Math::vec2   startPosition;
-    Math::vec2   previousPosition;
+    const double gravity;
+    const double jumpStrength;
+    const double baseSpeed;
+    const double sprintSpeedMultiplier;
+    const double sprintActivationTime;
+
+    Math::vec2 startPosition;
+    Math::vec2 previousPosition;
 };

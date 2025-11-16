@@ -1,4 +1,5 @@
 #include "Mode1.h"
+#include "Bonfire.hpp"
 #include "CS200/IRenderer2D.hpp"
 #include "CS200/NDC.hpp"
 #include "Engine/Engine.hpp"
@@ -9,7 +10,7 @@
 #include "Engine/Window.hpp"
 #include "Player.hpp"
 #include "Sign.hpp"
-#include "SubtitleManager.hpp"
+#include "WorldTextManager.hpp"
 #include <imgui.h>
 
 void Mode1::Load()
@@ -17,15 +18,16 @@ void Mode1::Load()
     AddGSComponent(new CS230::GameObjectManager());
     AddGSComponent(new CS230::ShowCollision());
 
-    subtitleManager = new CS230::SubtitleManager();
-    AddGSComponent(subtitleManager);
-
     camera = new CS230::Camera(
         Math::rect{
             {   0,   0 },
             { 800, 600 }
     });
     AddGSComponent(camera);
+
+    worldTextManager = new WorldTextManager();
+    worldTextManager->SetCamera(camera);
+    AddGSComponent(worldTextManager);
 
     mapManager = new CS230::MapManager();
     mapManager->AddMap(new CS230::Map("Assets/maps/Tutorial.svg"));
@@ -45,10 +47,20 @@ void Mode1::Load()
     double platformY = 200;
     double signY     = platformY + 50; // 표지판이 플랫폼 위에 서 있도록 Y 위치 계산
 
-    gom->Add(new CS230::Sign({ 0.0, signY }, signSize, "AD keys"));
-    gom->Add(new CS230::Sign({ 100.0, signY }, signSize, "W or space"));
-    gom->Add(new CS230::Sign({ 900.0, signY + 200.0 }, signSize, "fire")); // 다른 높이의 플랫폼
-    gom->Add(new CS230::Sign({ 1900.0, signY + 200.0 }, signSize, "LShift Dash"));
+    gom->Add(new Sign({ 0.0, signY }, signSize, "AD keys to move"));
+    gom->Add(new Sign({ 100.0, signY }, signSize, "W or Space to Jump"));
+
+    double platformY2 = 500.0;
+    double signY2     = platformY2 + (signSize.y / 2.0);
+    gom->Add(new Sign({ 1900.0, signY2 }, signSize, "LShift to Dash"));
+
+    // 모닥불 (Bonfire)
+    Math::vec2 bonfireSize = { 10.0, 10.0 };
+    double     bonfireY    = platformY2 + (bonfireSize.y / 2.0);
+    gom->Add(new Bonfire({ 900.0, bonfireY }, bonfireSize));
+
+    // 모닥불 튜토리얼 표지판
+    gom->Add(new Sign({ 800.0, signY2 }, signSize, "Press 'F' at Bonfire to save."));
 }
 
 void Mode1::Update(double dt)
@@ -83,6 +95,7 @@ void Mode1::DrawImGui()
         ImGui::Text("Player Position: (%.1f, %.1f)", player->GetPosition().x, player->GetPosition().y);
         ImGui::Text("Player Y Velocity: %.1f", player->velocityY);
         ImGui::Text("Is Jumping/Falling: %s", player->isJumping ? "Yes" : "No");
+        ImGui::Text("Interaction Target: %s", player->interactionTarget ? player->interactionTarget->TypeName().c_str() : "None");
 
         // currentPlatformIndex는 현재 단순 플래그 역할만 함
         if (!player->isJumping)
@@ -102,16 +115,16 @@ void Mode1::DrawImGui()
     }
     ImGui::End();
 
-    if (subtitleManager != nullptr)
+    if (worldTextManager != nullptr)
     {
-        subtitleManager->Draw();
+        worldTextManager->DrawImGui();
     }
 }
 
 void Mode1::Unload()
 {
     ClearGSComponents();
-    player          = nullptr;
-    mapManager      = nullptr;
-    subtitleManager = nullptr;
+    player           = nullptr;
+    mapManager       = nullptr;
+    worldTextManager = nullptr;
 }

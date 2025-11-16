@@ -52,11 +52,12 @@ set(SOURCE_CODE
     Engine/Vec2.hpp Engine/Vec2.cpp
     Engine/Window.hpp Engine/Window.cpp
      
+    Game/Bonfire.hpp Game/Bonfire.cpp
     Game/Mode1.h Game/Mode1.cpp
     Game/Player.hpp Game/Player.cpp
     Game/Shield.hpp Game/Shield.cpp
     Game/Sign.hpp Game/Sign.cpp
-    Game/SubtitleManager.hpp Game/SubtitleManager.cpp
+    Game/WorldTextManager.hpp Game/WorldTextManager.cpp
 
     OpenGL/Buffer.hpp OpenGL/Buffer.cpp
     OpenGL/Environment.hpp

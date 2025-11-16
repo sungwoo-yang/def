@@ -3,11 +3,11 @@
 #include "Engine/GameState.hpp"
 
 class Player;
+class WorldTextManager;
 
 namespace CS230
 {
     class MapManager;
-    class SubtitleManager;
 }
 
 class Mode1 : public CS230::GameState
@@ -25,10 +25,10 @@ public:
     }
 
 private:
-    CS230::Camera*          camera;
-    Player*                 player;
-    CS230::MapManager*      mapManager;
-    CS230::SubtitleManager* subtitleManager;
+    CS230::Camera*     camera;
+    Player*            player;
+    CS230::MapManager* mapManager;
+    WorldTextManager*  worldTextManager;
 
     Math::rect level1_boundary = {
         {  700.f,     0.f },

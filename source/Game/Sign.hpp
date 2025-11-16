@@ -4,32 +4,29 @@
 #include "Engine/GameObjectTypes.hpp"
 #include <string>
 
-namespace CS230
+// CS230 네임스페이스를 사용하지 않습니다.
+class Sign : public CS230::GameObject
 {
-    class Sign : public GameObject
+public:
+    // 생성자에서 msg를 받습니다.
+    Sign(Math::vec2 start_pos, Math::vec2 size, std::string msg);
+
+    void Draw(const Math::TransformationMatrix& camera_matrix) override;
+
+    GameObjectTypes Type() override
     {
-    public:
-        Sign(Math::vec2 start_pos, Math::vec2 size, std::string msg);
+        return GameObjectTypes::Sign;
+    }
 
-        void Update(double dt) override;
-        void Draw(const Math::TransformationMatrix& camera_matrix) override;
+    std::string TypeName() override
+    {
+        return "Sign";
+    }
 
-        // GameObject 가상 함수 오버라이드
-        GameObjectTypes Type() override
-        {
-            return GameObjectTypes::Sign;
-        }
+    // 플레이어가 상호작용 시 이 함수가 호출됩니다.
+    void Interact(CS230::GameObject* interactor) override;
 
-        std::string TypeName() override
-        {
-            return "Sign";
-        }
-
-        // 플레이어가 이 오브젝트와 상호작용할 때 호출될 함수
-        void Interact(GameObject* interactor) override;
-
-    private:
-        Math::vec2  signSize;
-        std::string message;
-    };
-}
+private:
+    Math::vec2  signSize;
+    std::string message; // 'msg'를 저장할 멤버 변수
+};
