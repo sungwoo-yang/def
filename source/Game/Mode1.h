@@ -7,6 +7,7 @@ class Player;
 namespace CS230
 {
     class MapManager;
+    class SubtitleManager;
 }
 
 class Mode1 : public CS230::GameState
@@ -24,9 +25,10 @@ public:
     }
 
 private:
-    CS230::Camera*     camera;
-    Player*            player;
-    CS230::MapManager* mapManager;
+    CS230::Camera*          camera;
+    Player*                 player;
+    CS230::MapManager*      mapManager;
+    CS230::SubtitleManager* subtitleManager;
 
     Math::rect level1_boundary = {
         {  700.f,     0.f },

@@ -64,6 +64,7 @@ public:
     std::optional<size_t> currentPlatformIndex = std::nullopt;
     double                velocityY            = 0.0;
     bool                  faceRight            = true;
+    CS230::GameObject*    interactionTarget    = nullptr;
 
 private:
     void HandleInput(double dt);
@@ -78,4 +79,5 @@ private:
     const double sprintSpeedMultiplier = 1.8;
     const double sprintActivationTime  = 0.5;
     Math::vec2   startPosition;
+    Math::vec2   previousPosition;
 };

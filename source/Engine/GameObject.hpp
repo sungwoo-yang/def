@@ -7,9 +7,9 @@
  */
 #pragma once
 #include "ComponentManager.hpp"
+#include "Matrix.hpp"
 #include "Sprite.hpp"
 #include "Vec2.hpp"
-#include "Matrix.hpp"
 
 enum class GameObjectTypes;
 
@@ -37,6 +37,7 @@ namespace CS230
         virtual void Update(double dt);
         virtual void Draw(const Math::TransformationMatrix& camera_matrix);
         virtual void ResolveCollision([[maybe_unused]] GameObject* other_object) { };
+        virtual void Interact([[maybe_unused]] GameObject* other_object) { };
 
         const Math::TransformationMatrix& GetMatrix();
         const Math::vec2&                 GetPosition() const;

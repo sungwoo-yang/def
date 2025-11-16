@@ -38,12 +38,32 @@
        id="g1">
       <path
          style="fill:#000000;stroke:#ffffff;stroke-width:7"
-         d="M 0,0 H 3000 v 200 H 0 Z"
+         d="M -550,0 H -500 v 2000 H -550 Z"
+         id="wall1" />
+      <path
+         style="fill:#000000;stroke:#ffffff;stroke-width:7"
+         d="M -500,0 H 10000 v 200 H -500 Z"
          id="path1" />
       <path
          style="fill:#000000;stroke:#ffffff;stroke-width:7"
          d="M 200,200 H 300 v 100 H 200 Z"
-         id="path_left_platform" />
+         id="stair1" />
+      <path
+         style="fill:#000000;stroke:#ffffff;stroke-width:7"
+         d="M 300,200 H 400 v 200 H 300 Z"
+         id="stair2" />
+      <path
+         style="fill:#000000;stroke:#ffffff;stroke-width:7"
+         d="M 400,200 H 1000 v 300 H 400 Z"
+         id="block1" />
+      <path
+         style="fill:#000000;stroke:#ffffff;stroke-width:7"
+         d="M 1200,200 H 2000 v 300 H 1200 Z"
+         id="block2" />
+      <path
+         style="fill:#000000;stroke:#ffffff;stroke-width:7"
+         d="M 2400,200 H 2600 v 300 H 2400 Z"
+         id="block2" />
     </g>
   </g>
 </svg>

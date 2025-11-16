@@ -55,6 +55,8 @@ set(SOURCE_CODE
     Game/Mode1.h Game/Mode1.cpp
     Game/Player.hpp Game/Player.cpp
     Game/Shield.hpp Game/Shield.cpp
+    Game/Sign.hpp Game/Sign.cpp
+    Game/SubtitleManager.hpp Game/SubtitleManager.cpp
 
     OpenGL/Buffer.hpp OpenGL/Buffer.cpp
     OpenGL/Environment.hpp

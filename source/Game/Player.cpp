@@ -29,11 +29,13 @@ Player::Player(Math::vec2 start_pos) : CS230::GameObject(start_pos), startPositi
 
     dashComponent.dashCooldown = 1.0;
     ResetState();
+    previousPosition = start_pos;
 }
 
 void Player::ResetState()
 {
     SetPosition(startPosition);
+    previousPosition     = startPosition;
     velocityY            = 0.0;
     isJumping            = true;
     currentPlatformIndex = std::nullopt;
@@ -44,6 +46,7 @@ void Player::ResetState()
     dashComponent.dashCooldownTimer = 0.0;
     isSprinting                     = false;
     shiftHoldTimer                  = 0.0;
+    interactionTarget               = nullptr;
 
     if (shieldComponent != nullptr)
     {
@@ -55,6 +58,8 @@ void Player::ResetState()
 
 void Player::Update(double dt)
 {
+    previousPosition = GetPosition();
+
     HandleInput(dt);
     dashComponent.UpdateTimers(dt);
 
@@ -83,6 +88,7 @@ void Player::Update(double dt)
 
     isJumping            = true;
     currentPlatformIndex = std::nullopt;
+    interactionTarget    = nullptr;
 
     GameObject::Update(dt);
 }
@@ -158,11 +164,24 @@ void Player::HandleInput(double dt)
             Engine::GetLogger().LogEvent("Event: Player Jump");
         }
     }
+
+    if (input.KeyJustPressed(CS230::Input::Keys::F))
+    {
+        if (interactionTarget != nullptr)
+        {
+            interactionTarget->Interact(this);
+        }
+    }
 }
 
 bool Player::CanCollideWith(GameObjectTypes other_object_type)
 {
     if (other_object_type == GameObjectTypes::Floor)
+    {
+        return true;
+    }
+
+    if (other_object_type == GameObjectTypes::Sign)
     {
         return true;
     }
@@ -187,18 +206,38 @@ void Player::ResolveCollision(CS230::GameObject* other_object)
     Math::rect my_box    = my_collider->WorldBoundary();
     Math::rect other_box = other_collider->WorldBoundary().FindBoundary();
 
-    if (velocityY <= 0)
+    double prev_bottom    = previousPosition.y - (PLAYER_COLLISION_SIZE.y / 2.0);
+    double platform_top   = other_box.Top();
+    bool   was_above      = prev_bottom >= platform_top;
+    bool   is_below_or_on = my_box.Bottom() <= platform_top;
+    if (other_object->Type() == GameObjectTypes::Floor)
     {
-        double       my_feet        = my_box.Bottom();
-        double       platform_top   = other_box.Top();
-        const double landingEpsilon = 10.0;
-
-        if (my_feet >= platform_top - landingEpsilon && my_box.Right() > other_box.Left() && my_box.Left() < other_box.Right())
+        if (velocityY <= 0 && was_above && is_below_or_on)
         {
             SetPosition({ GetPosition().x, platform_top + (PLAYER_COLLISION_SIZE.y / 2.0) });
             velocityY = 0.0;
             isJumping = false;
         }
+        else
+        {
+            double overlap_left  = my_box.Right() - other_box.Left();
+            double overlap_right = other_box.Right() - my_box.Left();
+
+            if (overlap_left < overlap_right)
+            {
+                SetPosition({ GetPosition().x - overlap_left, GetPosition().y });
+            }
+            else
+            {
+                SetPosition({ GetPosition().x + overlap_right, GetPosition().y });
+            }
+
+            SetVelocity({ 0.0, GetVelocity().y });
+        }
+    }
+    else if (other_object->Type() == GameObjectTypes::Sign)
+    {
+        interactionTarget = other_object;
     }
 }
 

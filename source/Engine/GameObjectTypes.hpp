@@ -13,6 +13,7 @@ enum class GameObjectTypes
     Floor,
     Laser,
     Target,
+    Sign,
     Particle,
     Count
 };
