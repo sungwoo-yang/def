@@ -1,17 +1,16 @@
 #pragma once
-#include "Engine/Rect.hpp" // <--- 님의 엔진 경로로 수정
-#include "Engine/Vec2.hpp" // <--- 님의 엔진 경로로 수정
+#include "Engine/Rect.hpp"
+#include "Engine/Vec2.hpp"
 #include <string>
 #include <vector>
 
-// Math 네임스페이스 안에 vec2와 rect가 있으므로 using 사용
 using Math::rect;
 using Math::vec2;
 
 struct [[nodiscard]] Polygon
 {
     std::vector<vec2> vertices;
-    int               vertexCount = 0; // 3 대신 0으로 초기화
+    int               vertexCount = 0;
     int               polycount   = 0;
     std::string       polyindex   = "";
 
@@ -29,7 +28,7 @@ struct [[nodiscard]] Polygon
             center.y += vertice.y;
         }
 
-        vertexCount = static_cast<int>(vertices.size()); // <--- 실제 크기로 설정
+        vertexCount = static_cast<int>(vertices.size());
 
         center.x /= vertexCount;
         center.y /= vertexCount;

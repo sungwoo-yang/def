@@ -2,7 +2,13 @@
 #include "Engine/Camera.hpp"
 #include "Engine/GameState.hpp"
 
-// Mode1 ���� ����
+class Player;
+
+namespace CS230
+{
+    class MapManager;
+}
+
 class Mode1 : public CS230::GameState
 {
 public:
@@ -10,10 +16,7 @@ public:
     void Update(double dt) override;
     void Unload() override;
     void Draw() override;
-
-    void DrawImGui() override
-    {
-    }
+    void DrawImGui() override;
 
     gsl::czstring GetName() const override
     {
@@ -21,11 +24,12 @@ public:
     }
 
 private:
-    CS230::Camera* camera;
-    Math::rect     level1_boundary = {
+    CS230::Camera*     camera;
+    Player*            player;
+    CS230::MapManager* mapManager;
+
+    Math::rect level1_boundary = {
         {  700.f,     0.f },
         { 4500.f, -4500.f }
     };
 };
-
-#pragma once

@@ -16,12 +16,15 @@ set(SOURCE_CODE
     CS200/RenderingAPI.hpp CS200/RenderingAPI.cpp
     CS200/RGBA.hpp
 
+    Engine/Physics/Reflection.hpp Engine/Physics/Reflection.cpp
+
     Engine/Animation.hpp Engine/Animation.cpp
     Engine/Camera.hpp Engine/Camera.cpp
     Engine/Collision.hpp Engine/Collision.cpp
     Engine/Component.hpp
     Engine/ComponentManager.hpp
     Engine/CountdownTimer.hpp Engine/CountdownTimer.cpp
+    Engine/Dash.hpp Engine/Dash.cpp
     Engine/Engine.hpp Engine/Engine.cpp
     Engine/Error.hpp
     Engine/Font.hpp Engine/Font.cpp
@@ -49,8 +52,9 @@ set(SOURCE_CODE
     Engine/Vec2.hpp Engine/Vec2.cpp
     Engine/Window.hpp Engine/Window.cpp
      
-    Game/Mode1.h Game/mode1.cpp
-
+    Game/Mode1.h Game/Mode1.cpp
+    Game/Player.hpp Game/Player.cpp
+    Game/Shield.hpp Game/Shield.cpp
 
     OpenGL/Buffer.hpp OpenGL/Buffer.cpp
     OpenGL/Environment.hpp

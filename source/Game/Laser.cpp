@@ -43,7 +43,7 @@ bool Laser::Update(double dt, bool playerIsParrying, const std::vector<std::pair
         }
 
         // 경고 레이저 경로 계산 (화면 중앙 조준)
-        const auto windowSize = CS230::Engine::GetWindow().GetSize();
+        const auto windowSize = Engine::GetWindow().GetSize();
         Math::vec2 center     = { windowSize.x / 2.0, windowSize.y / 2.0 };
         Math::vec2 initialDir = (center - laserOrigin).Normalize();
         if (initialDir.Length() < std::numeric_limits<double>::epsilon())
@@ -79,13 +79,13 @@ bool Laser::CheckParrySuccess(bool playerIsParrying)
         if (playerIsParrying)
         {
             laserColor = COLOR_YELLOW;
-            CS230::Engine::GetLogger().LogEvent("Laser turned YELLOW (Parry)");
+            Engine::GetLogger().LogEvent("Laser turned YELLOW (Parry)");
             return true;
         }
         else
         {
             laserColor = COLOR_RED;
-            CS230::Engine::GetLogger().LogEvent("Laser turned RED (Parry Failed)");
+            Engine::GetLogger().LogEvent("Laser turned RED (Parry Failed)");
             return false;
         }
     }
@@ -100,7 +100,7 @@ void Laser::CalculateLaserPath(const std::vector<std::pair<Math::vec2, Math::vec
         return;
     }
 
-    const auto windowSize = CS230::Engine::GetWindow().GetSize();
+    const auto windowSize = Engine::GetWindow().GetSize();
     Math::vec2 center     = { windowSize.x / 2.0, windowSize.y / 2.0 };
     Math::vec2 initialDir = (center - laserOrigin).Normalize();
     if (initialDir.Length() < std::numeric_limits<double>::epsilon())
@@ -147,7 +147,7 @@ bool Laser::CheckShieldCollision(const std::vector<std::pair<Math::vec2, Math::v
         // 따라서 광선-선분 검사가 아닌 선분-선분 검사가 필요하지만,
         // 여기서는 DemoReflection의 로직을 따라 광선-선분 검사를 사용합니다.
         
-        const auto windowSize = CS230::Engine::GetWindow().GetSize();
+        const auto windowSize = Engine::GetWindow().GetSize();
         Math::vec2 center     = { windowSize.x / 2.0, windowSize.y / 2.0 };
         Math::vec2 initialDir = (center - laserOrigin).Normalize();
          if (initialDir.Length() < std::numeric_limits<double>::epsilon())

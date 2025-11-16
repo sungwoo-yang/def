@@ -59,21 +59,18 @@ void Shield::HandleInput(double dt)
         return;
     }
 
-    auto& input = CS230::Engine::GetInput();
+    auto& input = Engine::GetInput();
     
-    // 쉴드 회전 (방향키)
     const double rotateSpeed = PI / 2.0;
     if (input.KeyDown(CS230::Input::Keys::Left))
         shieldAngle += rotateSpeed * dt;
     if (input.KeyDown(CS230::Input::Keys::Right))
         shieldAngle -= rotateSpeed * dt;
     
-    // 각도 정규화 (0 ~ 2*PI)
     shieldAngle = fmod(shieldAngle, 2.0 * PI);
     if (shieldAngle < 0)
         shieldAngle += 2.0 * PI;
 
-    // 패리 시도 (스페이스바)
     if (parryWindowActive && input.KeyJustPressed(CS230::Input::Keys::Space))
     {
         TryParry();
@@ -82,11 +79,10 @@ void Shield::HandleInput(double dt)
 
 void Shield::TryParry()
 {
-    // 패리 윈도우가 활성화되어 있고, 쉴드가 얼지 않았을 때만 성공
     if (parryWindowActive && !isShieldFrozen)
     {
         isParrying = true;
-        CS230::Engine::GetLogger().LogEvent("Parry Input Success!");
+        Engine::GetLogger().LogEvent("Parry Input Success!");
     }
 }
 
@@ -114,7 +110,7 @@ void Shield::Update(double dt)
         {
             isShieldFrozen    = false;
             shieldFrozenTimer = 0.0;
-            CS230::Engine::GetLogger().LogEvent("Shield Unfrozen.");
+            Engine::GetLogger().LogEvent("Shield Unfrozen.");
         }
     }
 
@@ -150,14 +146,14 @@ void Shield::HandleHit(bool parrySuccess)
         // 패리 성공: 쉴드 고정
         isShieldFrozen    = true;
         shieldFrozenTimer = 0.0;
-        CS230::Engine::GetLogger().LogEvent("Shield Frozen!");
+        Engine::GetLogger().LogEvent("Shield Frozen!");
     }
     else
     {
         // 패리 실패 (피격): 쉴드 색상 변경
         targetShieldColor = CS200::unpack_color(COLOR_RED);
         shieldHitTimer    = 0.0;
-        CS230::Engine::GetLogger().LogEvent("Shield hit by RED laser!");
+        Engine::GetLogger().LogEvent("Shield hit by RED laser!");
     }
 }
 

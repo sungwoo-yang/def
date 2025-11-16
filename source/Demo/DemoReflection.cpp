@@ -20,12 +20,6 @@
 
 namespace
 {
-
-    inline double dot(const Math::vec2& a, const Math::vec2& b)
-    {
-        return a.x * b.x + a.y * b.y;
-    }
-
     inline Math::vec2 perpendicular(const Math::vec2& v)
     {
         return Math::vec2{ -v.y, v.x };

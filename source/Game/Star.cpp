@@ -1,19 +1,13 @@
-#include "Game/Target.hpp"
+#include "Star.hpp"
 #include "CS200/IRenderer2D.hpp"
-#include "Engine/Matrix.hpp"
 #include "Engine/Engine.hpp"
 #include "Engine/Logger.hpp"
+#include "Engine/Matrix.hpp"
 #include <cmath>
 #include <limits>
 
 namespace
 {
-    // DemoReflection.cpp에서 가져온 헬퍼 함수들
-    inline double dot(const Math::vec2& a, const Math::vec2& b)
-    {
-        return a.x * b.x + a.y * b.y;
-    }
-
     bool LineCircleIntersection(Math::vec2 p1, Math::vec2 p2, Math::vec2 center, double radius, Math::vec2& intersection)
     {
         Math::vec2 d = p2 - p1;
@@ -52,8 +46,7 @@ namespace
     }
 } // 익명 네임스페이스 끝
 
-Target::Target(Math::vec2 pos)
-    : position(pos), color(COLOR_RED), radius(25.0), hitByParriedLaser(false)
+Target::Target(Math::vec2 pos) : position(pos), color(COLOR_RED), radius(25.0), hitByParriedLaser(false)
 {
 }
 
@@ -63,7 +56,7 @@ void Target::Update(const std::vector<std::pair<Math::vec2, Math::vec2>>& parrie
     {
         color             = COLOR_GREEN;
         hitByParriedLaser = true;
-        CS230::Engine::GetLogger().LogEvent("Target hit by parried laser!");
+        Engine::GetLogger().LogEvent("Target hit by parried laser!");
     }
 }
 

@@ -53,6 +53,7 @@ namespace CS230
             Down,
             Escape,
             Tab,
+            LShift,
             Count
         };
 
@@ -115,6 +116,7 @@ namespace CS230
             case Input::Keys::Down: return "Down";
             case Input::Keys::Escape: return "Escape";
             case Input::Keys::Tab: return "Tab";
+            case Input::Keys::LShift: return "LShift";
             case Input::Keys::Count: return "Count";
         }
         return "Unknown";

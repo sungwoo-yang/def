@@ -5,11 +5,6 @@
 
 namespace
 {
-    inline double dot(const Math::vec2& a, const Math::vec2& b)
-    {
-        return a.x * b.x + a.y * b.y;
-    }
-
     inline Math::vec2 perpendicular(const Math::vec2& v)
     {
         return Math::vec2{ -v.y, v.x };
@@ -58,31 +53,31 @@ namespace Physics
     std::vector<std::pair<Math::vec2, Math::vec2>> CalculateLaserPath(Math::vec2 startPos, Math::vec2 initialDir, const std::vector<std::pair<Math::vec2, Math::vec2>>& segments, int maxBounces)
     {
         std::vector<std::pair<Math::vec2, Math::vec2>> path;
-        Math::vec2 currentPos = startPos;
-        Math::vec2 currentDir = initialDir.Normalize();
-        const double verySmallDistance = 1e-6;
+        Math::vec2                                     currentPos        = startPos;
+        Math::vec2                                     currentDir        = initialDir.Normalize();
+        const double                                   verySmallDistance = 1e-6;
 
         for (int bounce = 0; bounce <= maxBounces; ++bounce)
         {
-            double closestT = std::numeric_limits<double>::infinity();
+            double     closestT = std::numeric_limits<double>::infinity();
             Math::vec2 closestIntersection;
             Math::vec2 surfaceNormal;
-            int intersectedSegmentIndex = -1;
+            int        intersectedSegmentIndex = -1;
 
             for (size_t i = 0; i < segments.size(); ++i)
             {
                 Math::vec2 intersectionPoint;
-                double t;
+                double     t;
                 if (RaySegmentIntersection(currentPos, currentDir, segments[i].first, segments[i].second, intersectionPoint, t))
                 {
                     if (t > verySmallDistance && t < closestT)
                     {
-                        closestT = t;
-                        closestIntersection = intersectionPoint;
+                        closestT                = t;
+                        closestIntersection     = intersectionPoint;
                         intersectedSegmentIndex = static_cast<int>(i);
 
                         Math::vec2 segmentVec = segments[i].second - segments[i].first;
-                        Math::vec2 normal = perpendicular(segmentVec).Normalize();
+                        Math::vec2 normal     = perpendicular(segmentVec).Normalize();
 
                         if (dot(normal, -currentDir) < 0)
                         {

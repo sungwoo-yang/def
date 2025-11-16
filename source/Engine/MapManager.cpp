@@ -1,4 +1,4 @@
- #include "Engine/MapManager.h"
+#include "Engine/MapManager.h"
 #include "Engine/Collision.hpp"
 #include "Engine/Engine.hpp"
 #include "Engine/GameObjectManager.hpp"
@@ -43,35 +43,31 @@ namespace CS230
         return maps[currentMapIndex];
     }
 
-    /*void MapManager::Update(double dt)
-    {*/
     void MapManager::Update([[maybe_unused]] double dt)
     {
         Map* currentMap = GetCurrentMap();
         if (currentMap && !currentMap->IsLevelLoaded())
         {
-            currentMap->ParseSVG(); // 프레임당 한 태그씩 파싱
+            currentMap->ParseSVG();
         }
     }
 
-    // --- Map ---
     Map::Map(const std::string& filename)
         : file_path(filename), level_loaded(false), currentCommand('\0'), pathRegex(R"(<path[^>]*\sd\s*=\s*"([^"]+))"), gIdRegex(R"(<g[^>]*\bid\s*=\s*"([^"]+))"),
           transformRegex(R"xxx(transform\s*=\s*"([^"]+)")xxx"), translateRegex(R"(translate\(([^,]+),\s*([^\)]+)\))"), rotateRegex(R"(rotate\(\s*([^\s,]+)\s*,\s*([^\s,]+)\s*,\s*([^\)]+)\s*\))"),
           matrixRegex(R"(matrix\(([^,]+),([^,]+),([^,]+),([^,]+),([^,]+),([^,]+)\))"), pathIdRegex(R"xxx(id="([^"]+)")xxx"), fillColorRegex(R"(fill:\s*(#[0-9a-fA-F]+);)"), gEndTagRegex(R"(</g>)"),
           svgEndTagRegex(R"(</svg>)"), scale({ 1.0f, 1.0f }), IsinG(false), IsTranslate(false), IsRotate(false), IsScale(false)
     {
-        // file_path를 assets::locate_asset을 통과한 경로로 저장합니다.
         try
         {
             this->file_path = assets::locate_asset(filename).string();
-            Engine::GetLogger().LogDebug("Map 객체 생성 (경로 확인): " + this->file_path);
+            Engine::GetLogger().LogDebug("Map: " + this->file_path);
         }
         catch (const std::exception& e)
         {
-            Engine::GetLogger().LogError("Map 생성 실패, 파일을 찾을 수 없음: " + filename);
+            Engine::GetLogger().LogError("Map " + filename);
             Engine::GetLogger().LogError(e.what());
-            this->file_path = filename; // <--- 실패해도 일단 저장
+            this->file_path = filename;
         }
     }
 
@@ -86,10 +82,10 @@ namespace CS230
         map_file.open(file_path);
         if (!map_file.is_open())
         {
-            Engine::GetLogger().LogError(file_path + " SVG 파일 열기 오류.");
+            Engine::GetLogger().LogError(file_path + " SVG");
             return;
         }
-        Engine::GetLogger().LogEvent(file_path + " SVG 파일 열기 성공.");
+        Engine::GetLogger().LogEvent(file_path + " SVG.");
     }
 
     void Map::ParseSVG()
@@ -99,23 +95,22 @@ namespace CS230
 
         std::string line;
         if (!std::getline(map_file, line))
-        { // 파일 끝 도달
+        {
             level_loaded = true;
             map_file.close();
-            Engine::GetLogger().LogEvent(file_path + " 파싱 완료 (파일 끝).");
+            Engine::GetLogger().LogEvent(file_path + "");
             return;
         }
-        currentTagBuffer += line; // 태그가 여러 줄일 수 있으므로 버퍼에 추가
+        currentTagBuffer += line; 
 
-        // 태그가 완성되었는지 ('>') 확인
         size_t tagEnd = currentTagBuffer.find('>');
         if (tagEnd == std::string::npos)
         {
-            return; // 아직 태그 완성 안됨
+            return;
         }
 
         std::string currentTag = currentTagBuffer.substr(0, tagEnd + 1);
-        currentTagBuffer.erase(0, tagEnd + 1); // 처리된 태그는 버퍼에서 제거
+        currentTagBuffer.erase(0, tagEnd + 1);
 
         std::smatch match;
 
@@ -123,7 +118,7 @@ namespace CS230
         {
             level_loaded = true;
             map_file.close();
-            Engine::GetLogger().LogEvent(file_path + " SVG 파싱 완료.");
+            Engine::GetLogger().LogEvent(file_path + "SVG.");
             return;
         }
 
@@ -178,7 +173,7 @@ namespace CS230
 
         if (std::regex_search(currentTag, match, pathRegex))
         {
-            Engine::GetLogger().LogDebug(">>> <path> 태그 발견! MapElement 객체 생성 시도...");
+            Engine::GetLogger().LogDebug("");
             std::string pathData = match[1].str();
             std::replace(pathData.begin(), pathData.end(), ' ', ',');
             std::vector<Math::vec2> positions = parsePathData(pathData);
@@ -209,7 +204,7 @@ namespace CS230
                         vec.y += translate.y;
                     }
                 }
-                vec.y = -vec.y; // SVG Y축(아래=+) -> 엔진 Y축(위=+) 변환
+                // vec.y = -vec.y;
             }
 
             if (std::regex_search(currentTag, match, fillColorRegex))
@@ -217,36 +212,29 @@ namespace CS230
                 fillColor = match[1].str();
             }
 
-            // --- ?? 4, 5단계에서 만든 클래스 사용! ?? ---
             Polygon poly;
             poly.vertices    = positions;
             poly.vertexCount = static_cast<int>(positions.size());
 
             Math::vec2 poly_center = poly.FindCenter();
 
-            // (static bool을 사용해 딱 한 번만 로그가 찍히도록 함)
             static bool first_path_logged = false;
             if (!first_path_logged)
             {
-                Engine::GetLogger().LogEvent("!!! 첫 번째 맵 좌표: " + std::to_string(poly_center.x) + ", " + std::to_string(poly_center.y));
+                Engine::GetLogger().LogEvent("" + std::to_string(poly_center.x) + ", " + std::to_string(poly_center.y));
                 first_path_logged = true;
             }
 
             Polygon modified_poly = poly;
             for (auto& v : modified_poly.vertices)
             {
-                v -= poly_center; // 중심점을 (0,0)으로 이동
+                v -= poly_center;
             }
 
-            // MapElement 객체 생성 (위치 = 폴리곤 중심)
             MapElement* map_obj = new MapElement(poly_center, modified_poly);
 
-            // SATCollision 컴포넌트 추가 (로컬 폴리곤 기준)
-
-
-            // GameObjectManager에 최종 객체 추가
             Engine::GetGameStateManager().GetGSComponent<GameObjectManager>()->Add(map_obj);
-            // --- ?? 작업 완료 ?? ---
+    
 
             return;
         }
@@ -254,7 +242,6 @@ namespace CS230
 
     std::vector<Math::vec2> Map::parsePathData(const std::string& pathData)
     {
-        // (지인 파일 로직 포팅, Math::vec2 사용)
         std::istringstream      stream(pathData);
         std::string             data;
         float                   last_x = 0, last_y = 0;
@@ -321,7 +308,7 @@ namespace CS230
             }
             catch (const std::exception& e)
             {
-                Engine::GetLogger().LogError("SVG parsePathData 오류: " + std::string(e.what()));
+                Engine::GetLogger().LogError("SVG parsePathData: " + std::string(e.what()));
                 continue;
             }
         }

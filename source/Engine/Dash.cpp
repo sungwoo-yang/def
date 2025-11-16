@@ -7,7 +7,6 @@ namespace CS230
 {
     void DashComponent::UpdateTimers(double delta_time)
     {
-        
         if (dashCooldownTimer > 0.0)
         {
             dashCooldownTimer -= delta_time;
@@ -29,7 +28,7 @@ namespace CS230
         {
             isDashing         = true;
             dashTimer         = dashDuration;
-            dashCooldownTimer = dashCooldown; 
+            dashCooldownTimer = dashCooldown;
             dashDirection     = currentFaceRight ? 1 : -1;
 
             Engine::GetLogger().LogEvent("Event: Player Dash Started");
@@ -53,4 +52,4 @@ namespace CS230
         return isDashing;
     }
 
-} 
+}

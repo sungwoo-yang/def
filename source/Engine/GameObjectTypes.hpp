@@ -7,16 +7,12 @@
  */
 #pragma once
 
-enum class GameObjectTypes {
-    Cat,
-    Robot,
-    Asteroid,
-    Crates,
-    Meteor,
-    Ship,
+enum class GameObjectTypes
+{
+    Player,
     Floor,
-    Portal,
-    Count,
     Laser,
+    Target,
     Particle,
+    Count
 };
