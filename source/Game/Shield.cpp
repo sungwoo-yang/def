@@ -1,13 +1,14 @@
 #include "Game/Shield.hpp"
-#include "Engine/GameObject.hpp"
+#include "CS200/IRenderer2D.hpp"
 #include "Engine/Engine.hpp"
+#include "Engine/GameObject.hpp"
 #include "Engine/Input.hpp"
 #include "Engine/Logger.hpp"
-#include "CS200/IRenderer2D.hpp"
 #include "Engine/Matrix.hpp"
-#include <cmath>
+#include "engine/Camera.hpp"
 #include <algorithm>
-#include <stdexcept> // std::runtime_error
+#include <cmath>
+#include <stdexcept>
 
 // DemoReflection.cpp의 'ease_color_to_target' 헬퍼 함수
 namespace
@@ -27,7 +28,10 @@ namespace
         };
         auto add_assign = [&](std::array<float, 4>& a, const std::array<float, 4>& b) -> std::array<float, 4>&
         {
-            a[0] += b[0]; a[1] += b[1]; a[2] += b[2]; a[3] += b[3];
+            a[0] += b[0];
+            a[1] += b[1];
+            a[2] += b[2];
+            a[3] += b[3];
             return a;
         };
 
@@ -36,17 +40,16 @@ namespace
     }
 } // 익명 네임스페이스 끝
 
-Shield::Shield(CS230::GameObject* owner)
-    : owner(owner), shieldHitTimer(shieldColorRecoveryTime)
+Shield::Shield(CS230::GameObject* owner) : owner(owner), shieldHitTimer(shieldColorRecoveryTime)
 {
     if (owner == nullptr)
     {
         throw std::runtime_error("Shield component must have a valid owner.");
     }
-    
+
     // 색상 초기화
-    currentShieldColor = CS200::unpack_color(COLOR_CYAN);
-    targetShieldColor  = CS200::unpack_color(COLOR_CYAN);
+    currentShieldColor = CS200::unpack_color(CS200::CYAN);
+    targetShieldColor  = CS200::unpack_color(CS200::CYAN);
 
     UpdatePosition(); // 소유자 위치 기준으로 쉴드 초기 위치 설정
 }
@@ -60,13 +63,13 @@ void Shield::HandleInput(double dt)
     }
 
     auto& input = Engine::GetInput();
-    
+
     const double rotateSpeed = PI / 2.0;
     if (input.KeyDown(CS230::Input::Keys::Left))
         shieldAngle += rotateSpeed * dt;
     if (input.KeyDown(CS230::Input::Keys::Right))
         shieldAngle -= rotateSpeed * dt;
-    
+
     shieldAngle = fmod(shieldAngle, 2.0 * PI);
     if (shieldAngle < 0)
         shieldAngle += 2.0 * PI;
@@ -127,10 +130,10 @@ void Shield::Update(double dt)
 void Shield::UpdatePosition()
 {
     const Math::vec2 ownerPos = owner->GetPosition();
-    double dx = (shieldLength / 2.0) * std::cos(shieldAngle);
-    double dy = (shieldLength / 2.0) * std::sin(shieldAngle);
-    shieldStart = ownerPos + Math::vec2{ dx, dy };
-    shieldEnd   = ownerPos - Math::vec2{ dx, dy };
+    double           dx       = (shieldLength / 2.0) * std::cos(shieldAngle);
+    double           dy       = (shieldLength / 2.0) * std::sin(shieldAngle);
+    shieldStart               = ownerPos + Math::vec2{ dx, dy };
+    shieldEnd                 = ownerPos - Math::vec2{ dx, dy };
 }
 
 void Shield::Draw(CS200::IRenderer2D& renderer, const Math::TransformationMatrix& camera_matrix) const
@@ -151,7 +154,7 @@ void Shield::HandleHit(bool parrySuccess)
     else
     {
         // 패리 실패 (피격): 쉴드 색상 변경
-        targetShieldColor = CS200::unpack_color(COLOR_RED);
+        targetShieldColor = CS200::unpack_color(CS200::RED);
         shieldHitTimer    = 0.0;
         Engine::GetLogger().LogEvent("Shield hit by RED laser!");
     }
@@ -159,14 +162,16 @@ void Shield::HandleHit(bool parrySuccess)
 
 std::vector<std::pair<Math::vec2, Math::vec2>> Shield::GetSegments() const
 {
-    return { { shieldStart, shieldEnd } };
+    return {
+        { shieldStart, shieldEnd }
+    };
 }
 
 void Shield::UpdateShieldColor(double dt)
 {
     // 쉴드가 빨간색(피격 상태)인지 확인
     bool isTargetRed = (targetShieldColor[0] > 0.9f && targetShieldColor[1] < 0.1f && targetShieldColor[2] < 0.1f);
-    
+
     if (isTargetRed)
     {
         // 빨간색이면, 복구 시간까지 타이머 증가
@@ -174,7 +179,7 @@ void Shield::UpdateShieldColor(double dt)
         if (shieldHitTimer >= shieldColorRecoveryTime)
         {
             // 복구 시간이 되면 기본 색상(시안)으로 타겟 변경
-            targetShieldColor = CS200::unpack_color(COLOR_CYAN);
+            targetShieldColor = CS200::unpack_color(CS200::CYAN);
         }
     }
     else
@@ -183,10 +188,10 @@ void Shield::UpdateShieldColor(double dt)
         // 타겟 색상이 시안이 아니라면 (예: 초기화, 패리 성공 등)
         if (!(targetShieldColor[0] < 0.1f && targetShieldColor[1] > 0.9f && targetShieldColor[2] > 0.9f))
         {
-            targetShieldColor = CS200::unpack_color(COLOR_CYAN);
+            targetShieldColor = CS200::unpack_color(CS200::CYAN);
         }
     }
-    
+
     // 현재 색상(currentShieldColor)을 목표 색상(targetShieldColor)으로 서서히 보간
     ease_color_to_target(currentShieldColor, targetShieldColor, dt, 5.0);
     shieldColor = CS200::pack_color(currentShieldColor);

@@ -1,43 +1,43 @@
 #pragma once
-
-#include "Engine/Vec2.hpp"
 #include "CS200/RGBA.hpp"
-#include <vector>
-#include <utility>
+#include "Engine/GameObject.hpp"
+#include "Engine/GameObjectTypes.hpp"
 
-// DemoReflection의 색상 상수
-constexpr CS200::RGBA COLOR_RED   = 0xFF0000FF;
-constexpr CS200::RGBA COLOR_GREEN = 0x00FF00FF;
+class Player; // 전방 선언
 
-namespace CS200
-{
-    class IRenderer2D;
-}
-
-namespace Math
-{
-    class TransformationMatrix;
-}
-
-/**
- * \brief DemoReflection의 타겟 로직을 관리하는 클래스입니다.
- *
- * 타겟의 상태, 그리기, 레이저와의 충돌 검사를 담당합니다.
- */
-class Target
+class Star : public CS230::GameObject
 {
 public:
-    Target(Math::vec2 pos);
+    Star(Math::vec2 position, Player* targetPlayer);
 
-    void Update(const std::vector<std::pair<Math::vec2, Math::vec2>>& parriedLaserPath);
-    void Draw(CS200::IRenderer2D& renderer, const Math::TransformationMatrix& camera_matrix) const;
-    void Reset();
+    void Update(double dt) override;
+    void Draw(const Math::TransformationMatrix& camera_matrix) override;
+
+    GameObjectTypes Type() override
+    {
+        return GameObjectTypes::Star;
+    }
+
+    std::string TypeName() override
+    {
+        return "Star";
+    }
 
 private:
-    bool CheckCollision(const std::vector<std::pair<Math::vec2, Math::vec2>>& laserPath) const;
+    enum class State
+    {
+        Idle,    // 감지 대기
+        Warning, // 2초간 조준 (보조선)
+        Cooldown // 3초간 대기
+    };
 
-    Math::vec2  position;
-    CS200::RGBA color             = COLOR_RED;
-    double      radius            = 25.0;
-    bool        hitByParriedLaser = false;
+    Player* player;
+    State   currentState;
+    double  timer;
+
+    const double detectionRadius  = 500.0;
+    const double warningDuration  = 2.0;
+    const double cooldownDuration = 3.0;
+
+    CS200::RGBA color = 0xFF0000FF; // 빨간색
 };

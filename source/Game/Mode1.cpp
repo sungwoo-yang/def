@@ -10,6 +10,7 @@
 #include "Engine/Window.hpp"
 #include "Player.hpp"
 #include "Sign.hpp"
+#include "Star.hpp"
 #include "WorldTextManager.hpp"
 #include <imgui.h>
 
@@ -36,11 +37,18 @@ void Mode1::Load()
 
     // add player
     player = new Player({ 0.0, 1600.0 });
+
+    auto gom = GetGSComponent<CS230::GameObjectManager>();
     GetGSComponent<CS230::GameObjectManager>()->Add(player);
+
     camera->SetPosition(player->GetPosition() - Math::vec2{ 400, 300 });
 
+
+    // STAR
+    Star* yellowStar = new Star({ 5000.0, 500.0 }, player);
+    gom->Add(yellowStar);
+
     // 요청하신 표지판들을 생성합니다. (Y 좌표는 플랫폼 높이에 맞게 조정해야 합니다)
-    auto       gom      = GetGSComponent<CS230::GameObjectManager>();
     Math::vec2 signSize = { 50.0, 25.0 }; // 표지판 기본 크기
 
     // SVG 로딩이 실제로는 비어있으므로, y=300을 플랫폼 상단으로 가정하고 배치합니다.

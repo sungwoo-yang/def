@@ -9,6 +9,7 @@
  */
 
 #pragma once
+#include "Vec2.hpp"
 #include <gsl/gsl>
 #include <vector>
 
@@ -17,6 +18,14 @@ namespace CS230
     class Input
     {
     public:
+        enum class MouseButton
+        {
+            Left,
+            Middle,
+            Right,
+            Count
+        };
+
         enum class Keys
         {
             A,
@@ -64,12 +73,22 @@ namespace CS230
         bool KeyJustReleased(Keys key) const;
         bool KeyJustPressed(Keys key) const;
 
+        bool       MouseButtonDown(MouseButton button) const;
+        bool       MouseButtonJustPressed(MouseButton button) const;
+        bool       MouseButtonJustReleased(MouseButton button) const;
+        Math::vec2 GetMousePosition() const;
+
     private:
         std::vector<bool> keys_down;
         std::vector<bool> previous_keys_down;
 
+        std::vector<bool> mouse_buttons_down;
+        std::vector<bool> previous_mouse_buttons_down;
+        Math::vec2        mouse_position;
+
     private:
         void SetKeyDown(Keys key, bool value);
+        void SetMouseButtonDown(MouseButton button, bool value);
     };
 
     constexpr Input::Keys& operator++(Input::Keys& the_key) noexcept

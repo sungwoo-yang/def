@@ -1,86 +1,82 @@
 #include "Star.hpp"
 #include "CS200/IRenderer2D.hpp"
 #include "Engine/Engine.hpp"
+#include "Engine/GameObjectManager.hpp"
+#include "Engine/GameStateManager.hpp"
 #include "Engine/Logger.hpp"
-#include "Engine/Matrix.hpp"
-#include <cmath>
-#include <limits>
+#include "Player.hpp"
+#include "YellowLaser.hpp"
 
-namespace
+Star::Star(Math::vec2 position, Player* targetPlayer) : CS230::GameObject(position), player(targetPlayer), currentState(State::Idle), timer(0.0)
 {
-    bool LineCircleIntersection(Math::vec2 p1, Math::vec2 p2, Math::vec2 center, double radius, Math::vec2& intersection)
+}
+
+void Star::Update(double dt)
+{
+    if (player == nullptr)
+        return;
+
+    Math::vec2 myPos     = GetPosition();
+    Math::vec2 playerPos = player->GetPosition();
+    double     distance  = (playerPos - myPos).Length();
+
+    switch (currentState)
     {
-        Math::vec2 d = p2 - p1;
-        Math::vec2 f = p1 - center;
-        double     a = dot(d, d);
-        double     b = 2.0 * dot(f, d);
-        double     c = dot(f, f) - radius * radius;
-
-        double discriminant = b * b - 4.0 * a * c;
-        if (discriminant < 0)
-        {
-            return false;
-        }
-        else
-        {
-            discriminant       = std::sqrt(discriminant);
-            double t1          = (-b - discriminant) / (2.0 * a);
-            double t2          = (-b + discriminant) / (2.0 * a);
-            bool   intersected = false;
-
-            if (t1 >= -std::numeric_limits<double>::epsilon() && t1 <= 1.0 + std::numeric_limits<double>::epsilon())
+        case State::Idle:
+            if (distance <= detectionRadius)
             {
-                intersection = p1 + d * t1;
-                intersected  = true;
+                currentState = State::Warning;
+                timer        = warningDuration;
+                Engine::GetLogger().LogEvent("Star detected player! Warning started.");
             }
-            if (t2 >= -std::numeric_limits<double>::epsilon() && t2 <= 1.0 + std::numeric_limits<double>::epsilon())
+            break;
+
+        case State::Warning:
+            timer -= dt;
+            if (timer <= 0.0)
             {
-                if (!intersected)
-                {
-                    intersection = p1 + d * t2;
-                }
-                intersected = true;
+                // 경고 종료 -> 발사
+                Math::vec2 dir = (playerPos - myPos).Normalize();
+
+                // [수정] 생성자에 player 전달 (반사 로직을 위해)
+                YellowLaser* laser = new YellowLaser(myPos, dir, player);
+
+                Engine::GetGameStateManager().GetGSComponent<CS230::GameObjectManager>()->Add(laser);
+                Engine::GetLogger().LogEvent("Star fired Yellow Laser!");
+
+                currentState = State::Cooldown;
+                timer        = cooldownDuration;
             }
-            return intersected;
-        }
-    }
-} // 익명 네임스페이스 끝
+            break;
 
-Target::Target(Math::vec2 pos) : position(pos), color(COLOR_RED), radius(25.0), hitByParriedLaser(false)
-{
+        case State::Cooldown:
+            timer -= dt;
+            if (timer <= 0.0)
+            {
+                currentState = State::Idle;
+            }
+            break;
+    }
+
+    CS230::GameObject::Update(dt);
 }
 
-void Target::Update(const std::vector<std::pair<Math::vec2, Math::vec2>>& parriedLaserPath)
+void Star::Draw(const Math::TransformationMatrix& camera_matrix)
 {
-    if (!hitByParriedLaser && CheckCollision(parriedLaserPath))
+    auto& renderer = Engine::GetRenderer2D();
+
+    // 1. 별 본체 (빨간색 원)
+    Math::TransformationMatrix transform = camera_matrix * GetMatrix() * Math::ScaleMatrix({ 40.0, 40.0 });
+    renderer.DrawCircle(transform, color);
+
+    // 2. 감지 범위 표시 (디버그용, 얇은 회색 원)
+    Math::TransformationMatrix rangeTransform = camera_matrix * Math::TranslationMatrix(GetPosition()) * Math::ScaleMatrix({ detectionRadius, detectionRadius });
+    renderer.DrawCircle(rangeTransform, CS200::CLEAR, 0x808080FF, 1.0);
+
+    // 3. 경고 상태일 때 보조선 표시
+    if (currentState == State::Warning && player != nullptr)
     {
-        color             = COLOR_GREEN;
-        hitByParriedLaser = true;
-        Engine::GetLogger().LogEvent("Target hit by parried laser!");
+        // 별에서 플레이어까지 얇은 노란색 선 (색상 변경 없음)
+        renderer.DrawLine(camera_matrix * GetPosition(), camera_matrix * player->GetPosition(), 0xFFFF0080, 2.0);
     }
-}
-
-void Target::Draw(CS200::IRenderer2D& renderer, const Math::TransformationMatrix& camera_matrix) const
-{
-    // 카메라 매트릭스 적용
-    renderer.DrawCircle(camera_matrix * Math::TranslationMatrix(position) * Math::ScaleMatrix(radius), color);
-}
-
-void Target::Reset()
-{
-    color             = COLOR_RED;
-    hitByParriedLaser = false;
-}
-
-bool Target::CheckCollision(const std::vector<std::pair<Math::vec2, Math::vec2>>& laserPath) const
-{
-    Math::vec2 intersectionPoint;
-    for (const auto& segment : laserPath)
-    {
-        if (LineCircleIntersection(segment.first, segment.second, position, radius, intersectionPoint))
-        {
-            return true;
-        }
-    }
-    return false;
 }

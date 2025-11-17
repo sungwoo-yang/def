@@ -4,6 +4,8 @@
 
 class Player;
 class WorldTextManager;
+class Star;
+class YellowLaser;
 
 namespace CS230
 {
@@ -29,6 +31,9 @@ private:
     Player*            player;
     CS230::MapManager* mapManager;
     WorldTextManager*  worldTextManager;
+    Star*              shooterStar;
+    Star*              targetStar;
+    YellowLaser*       yellowLaser;
 
     Math::rect level1_boundary = {
         {  700.f,     0.f },

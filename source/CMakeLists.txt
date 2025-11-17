@@ -57,7 +57,9 @@ set(SOURCE_CODE
     Game/Player.hpp Game/Player.cpp
     Game/Shield.hpp Game/Shield.cpp
     Game/Sign.hpp Game/Sign.cpp
+    Game/Star.hpp Game/Star.cpp
     Game/WorldTextManager.hpp Game/WorldTextManager.cpp
+    Game/YellowLaser.hpp Game/YellowLaser.cpp
 
     OpenGL/Buffer.hpp OpenGL/Buffer.cpp
     OpenGL/Environment.hpp

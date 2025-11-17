@@ -12,7 +12,7 @@ enum class GameObjectTypes
     Player,
     Floor,
     Laser,
-    Target,
+    Star,
     Sign,
     Bonfire,
     Particle,

@@ -1,5 +1,5 @@
 #include "Game/Laser.hpp"
-#include "Game/Target.hpp" // 전방 선언의 구현 포함
+#include "Game/Star.hpp" // 전방 선언의 구현 포함
 #include "Engine/Physics/Reflection.hpp"
 #include "Engine/Engine.hpp"
 #include "Engine/Window.hpp"
@@ -10,7 +10,7 @@
 
 Laser::Laser(Math::vec2 origin) : laserOrigin(origin)
 {
-    laserColor = COLOR_RED;
+    laserColor = CS200::RED;
     isLaserOn = false;
     wasLaserOn = false;
     showingWarningLaser = false;
@@ -123,7 +123,7 @@ void Laser::CalculateLaserPath(const std::vector<std::pair<Math::vec2, Math::vec
 
 bool Laser::CheckShieldCollision(const std::vector<std::pair<Math::vec2, Math::vec2>>& shieldSegments) const
 {
-    if (!isLaserOn || laserColor != COLOR_RED)
+    if (!isLaserOn || laserColor != CS200::RED)
     {
         return false;
     }

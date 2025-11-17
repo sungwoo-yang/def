@@ -6,12 +6,6 @@
 #include <utility>
 #include <vector>
 
-constexpr CS200::RGBA COLOR_RED     = 0xFF0000FF;
-constexpr CS200::RGBA COLOR_YELLOW  = 0xFFFF00FF;
-constexpr CS200::RGBA COLOR_GREEN   = 0x00FF00FF;
-constexpr CS200::RGBA COLOR_CYAN    = 0x00FFFFFF;
-constexpr CS200::RGBA COLOR_WHITE   = 0xFFFFFFFF;
-constexpr CS200::RGBA COLOR_BLACK   = 0x000000FF;
 constexpr CS200::RGBA COLOR_WARNING = 0xFF000080;
 constexpr CS200::RGBA COLOR_PARRY_WARNING = 0x00FFFF80;
 

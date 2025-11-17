@@ -34,7 +34,7 @@ public:
     void Draw(CS200::IRenderer2D& renderer, const Math::TransformationMatrix& camera_matrix) const;
 
     bool IsLaserOn() const { return isLaserOn; }
-    bool IsParried() const { return laserColor == COLOR_YELLOW; }
+    bool IsParried() const { return laserColor == CS200::YELLOW; }
     const std::vector<std::pair<Math::vec2, Math::vec2>>& GetLaserPath() const { return laserPath; }
 
     /**
@@ -64,7 +64,7 @@ private:
     bool         wasLaserOn          = false; // 레이저가 켜지는 순간을 감지
     bool         showingWarningLaser = false;
     CS200::RGBA  warningLaserColor   = COLOR_WARNING;
-    CS200::RGBA  laserColor          = COLOR_RED;
+    CS200::RGBA  laserColor          = CS200::RED;
 
     // 타이밍 상수
     const double warningLaserLeadTime  = 5.0;
