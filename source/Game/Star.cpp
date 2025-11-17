@@ -4,10 +4,12 @@
 #include "Engine/GameObjectManager.hpp"
 #include "Engine/GameStateManager.hpp"
 #include "Engine/Logger.hpp"
+#include "Engine/Physics/Reflection.hpp"
 #include "Player.hpp"
+#include "Shield.hpp"
 #include "YellowLaser.hpp"
 
-Star::Star(Math::vec2 position, Player* targetPlayer) : CS230::GameObject(position), player(targetPlayer), currentState(State::Idle), timer(0.0)
+Star::Star(Math::vec2 position, Player* targetPlayer, TargetStar* destStar) : CS230::GameObject(position), player(targetPlayer), target(destStar), currentState(State::Idle), timer(0.0)
 {
 }
 
@@ -35,17 +37,13 @@ void Star::Update(double dt)
             timer -= dt;
             if (timer <= 0.0)
             {
-                // 경고 종료 -> 발사
-                Math::vec2 dir = (playerPos - myPos).Normalize();
+                Math::vec2 dir = (player->GetPosition() - GetPosition()).Normalize();
 
-                // [수정] 생성자에 player 전달 (반사 로직을 위해)
-                YellowLaser* laser = new YellowLaser(myPos, dir, player);
+                // [수정] YellowLaser 생성 시 target 전달
+                YellowLaser* laser = new YellowLaser(GetPosition(), dir, player, target);
 
                 Engine::GetGameStateManager().GetGSComponent<CS230::GameObjectManager>()->Add(laser);
-                Engine::GetLogger().LogEvent("Star fired Yellow Laser!");
-
-                currentState = State::Cooldown;
-                timer        = cooldownDuration;
+                // ...
             }
             break;
 
@@ -61,22 +59,40 @@ void Star::Update(double dt)
     CS230::GameObject::Update(dt);
 }
 
-void Star::Draw(const Math::TransformationMatrix& camera_matrix)
+void Star::Draw([[maybe_unused]] const Math::TransformationMatrix& camera_matrix)
 {
     auto& renderer = Engine::GetRenderer2D();
 
-    // 1. 별 본체 (빨간색 원)
-    Math::TransformationMatrix transform = camera_matrix * GetMatrix() * Math::ScaleMatrix({ 40.0, 40.0 });
+    // 1. 별 본체
+    // 월드 좌표 기준 Transform 생성
+    Math::TransformationMatrix transform = GetMatrix() * Math::ScaleMatrix({ 40.0, 40.0 });
     renderer.DrawCircle(transform, color);
 
-    // 2. 감지 범위 표시 (디버그용, 얇은 회색 원)
-    Math::TransformationMatrix rangeTransform = camera_matrix * Math::TranslationMatrix(GetPosition()) * Math::ScaleMatrix({ detectionRadius, detectionRadius });
+    // 2. 감지 범위 표시
+    Math::TransformationMatrix rangeTransform = Math::TranslationMatrix(GetPosition()) * Math::ScaleMatrix({ detectionRadius, detectionRadius });
     renderer.DrawCircle(rangeTransform, CS200::CLEAR, 0x808080FF, 1.0);
 
-    // 3. 경고 상태일 때 보조선 표시
+    // 3. 보조선
     if (currentState == State::Warning && player != nullptr)
     {
-        // 별에서 플레이어까지 얇은 노란색 선 (색상 변경 없음)
-        renderer.DrawLine(camera_matrix * GetPosition(), camera_matrix * player->GetPosition(), 0xFFFF0080, 2.0);
+        std::vector<std::pair<Math::vec2, Math::vec2>> walls;
+        Shield*                                        shield = player->GetShield();
+
+        // 가드 중이면 벽 추가
+        if (shield && shield->IsGuardUp())
+        {
+            walls.push_back(shield->GetSegments()[0]);
+        }
+
+        Math::vec2 dir = (player->GetPosition() - GetPosition()).Normalize();
+
+        // 경로 계산 (최대 2회 반사)
+        auto path = Physics::CalculateLaserPath(GetPosition(), dir, walls, 2);
+
+        for (const auto& seg : path)
+        {
+            // 노란색 점선 느낌 (반투명)
+            renderer.DrawLine(seg.first, seg.second, 0xFFFF0080, 2.0);
+        }
     }
 }

@@ -63,27 +63,25 @@ void Shield::HandleInput([[maybe_unused]] double dt)
 
     auto& input = Engine::GetInput();
 
-    // --- 마우스 회전 로직 (기존과 동일) ---
+    // [[ 1. 마우스 회전 로직 수정 (좌표 보정) ]]
     Math::vec2  mouseScreenPos = input.GetMousePosition();
     Math::ivec2 winSize        = Engine::GetWindow().GetSize();
-    Math::vec2  winSizeVec     = { static_cast<double>(winSize.x), static_cast<double>(winSize.y) };
 
-    auto       camera    = Engine::GetGameStateManager().GetGSComponent<CS230::Camera>();
-    Math::vec2 cameraPos = camera ? camera->GetPosition() : Math::vec2{ 0, 0 };
+    // 마우스 좌표를 OpenGL 좌표계(좌하단 0,0)로 변환
+    // SDL은 좌상단이 (0,0), OpenGL은 좌하단이 (0,0)
+    Math::vec2 mouseGLPos = { mouseScreenPos.x, static_cast<double>(winSize.y) - mouseScreenPos.y };
 
-    // OpenGL 좌표계(좌하단 0,0)로 변환
-    Math::vec2 mouseGLPos = { mouseScreenPos.x, winSizeVec.y - mouseScreenPos.y };
+    // 카메라 가져오기
+    auto       camera           = Engine::GetGameStateManager().GetGSComponent<CS230::Camera>();
+    Math::vec2 cameraBottomLeft = camera ? camera->GetPosition() : Math::vec2{ 0, 0 };
 
-    // 카메라 중심이 아닌, 실제 카메라가 비추는 영역의 좌하단 좌표 계산
-    // (카메라 위치는 화면 중심을 의미함)
-    Math::vec2 cameraBottomLeft = cameraPos - (winSizeVec * 0.5);
-    Math::vec2 mouseWorldPos    = cameraBottomLeft + mouseGLPos;
+    // 마우스의 월드 좌표 = 카메라 위치(좌하단) + 마우스 화면 좌표
+    Math::vec2 mouseWorldPos = cameraBottomLeft + mouseGLPos;
 
     Math::vec2 dir = mouseWorldPos - owner->GetPosition();
     shieldAngle    = std::atan2(dir.y, dir.x);
 
-
-    // [[ 2. 우클릭 패링 시도 (누르는 순간) ]]
+    // [[ 2. 우클릭 패링 시도 ]]
     if (input.MouseButtonJustPressed(CS230::Input::MouseButton::Right))
     {
         if (parryWindowActive)
@@ -149,17 +147,31 @@ void Shield::Update(double dt)
 void Shield::UpdatePosition()
 {
     const Math::vec2 ownerPos = owner->GetPosition();
-    double           dx       = (shieldLength / 2.0) * std::cos(shieldAngle);
-    double           dy       = (shieldLength / 2.0) * std::sin(shieldAngle);
-    shieldStart               = ownerPos + Math::vec2{ dx, dy };
-    shieldEnd                 = ownerPos - Math::vec2{ dx, dy };
+
+    // 쉴드 중심점: 플레이어 위치 + 각도 방향 * 반지름
+    // (shieldAngle은 마우스 방향)
+    double dirX = std::cos(shieldAngle);
+    double dirY = std::sin(shieldAngle);
+
+    shieldCenter = ownerPos + Math::vec2{ dirX * orbitRadius, dirY * orbitRadius };
+
+    // 쉴드 선분: 중심점에서 '각도의 수직 방향'으로 뻗어나감 (접선)
+    // 마우스 방향(반지름)과 수직인 벡터: {-sin, cos}
+    double tanX = -dirY;
+    double tanY = dirX;
+
+    Math::vec2 halfLenVec = Math::vec2{ tanX, tanY } * (shieldLength / 2.0);
+
+    shieldStart = shieldCenter + halfLenVec;
+    shieldEnd   = shieldCenter - halfLenVec;
 }
 
-void Shield::Draw(CS200::IRenderer2D& renderer, const Math::TransformationMatrix& camera_matrix) const
+void Shield::Draw(CS200::IRenderer2D& renderer, [[maybe_unused]] const Math::TransformationMatrix& camera_matrix) const
 {
     if (isShieldFrozen || IsGuardUp())
     {
-        renderer.DrawLine(camera_matrix * shieldStart, camera_matrix * shieldEnd, shieldColor, 3.0);
+        // camera_matrix 곱셈 제거!
+        renderer.DrawLine(shieldStart, shieldEnd, shieldColor, 3.0);
     }
 }
 

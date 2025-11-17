@@ -11,6 +11,7 @@
 #include "Player.hpp"
 #include "Sign.hpp"
 #include "Star.hpp"
+#include "TargetStar.hpp"
 #include "WorldTextManager.hpp"
 #include <imgui.h>
 
@@ -45,7 +46,10 @@ void Mode1::Load()
     camera->SetPosition(player->GetPosition() - Math::vec2{ winSize.x * 0.5, winSize.y * 0.5 });
 
     // STAR
-    Star* yellowStar = new Star({ 5000.0, 500.0 }, player);
+    TargetStar* destStar = new TargetStar({ 5500.0, 750.0 });
+    gom->Add(destStar);
+
+    Star* yellowStar = new Star({ 5000.0, 750.0 }, player, destStar);
     gom->Add(yellowStar);
 
     // 요청하신 표지판들을 생성합니다. (Y 좌표는 플랫폼 높이에 맞게 조정해야 합니다)
@@ -93,6 +97,11 @@ void Mode1::Update(double dt)
         Math::vec2 winSize   = static_cast<Math::vec2>(Engine::GetWindow().GetSize());
         Math::vec2 targetPos = player->GetPosition() - Math::vec2{ winSize.x * 0.5, winSize.y * 0.3 };
         camera->SetPosition(targetPos);
+    }
+
+    if (Engine::GetInput().KeyJustPressed(CS230::Input::Keys::P))
+    {
+        player->SetPosition({ 5000, 300 });
     }
 }
 

@@ -58,6 +58,7 @@ set(SOURCE_CODE
     Game/Shield.hpp Game/Shield.cpp
     Game/Sign.hpp Game/Sign.cpp
     Game/Star.hpp Game/Star.cpp
+    Game/TargetStar.hpp Game/TargetStar.cpp
     Game/WorldTextManager.hpp Game/WorldTextManager.cpp
     Game/YellowLaser.hpp Game/YellowLaser.cpp
 
