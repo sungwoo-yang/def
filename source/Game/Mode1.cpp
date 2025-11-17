@@ -36,13 +36,13 @@ void Mode1::Load()
     AddGSComponent(mapManager);
 
     // add player
-    player = new Player({ 0.0, 1600.0 });
+    player = new Player({ 0.0, 800.0 });
 
     auto gom = GetGSComponent<CS230::GameObjectManager>();
     GetGSComponent<CS230::GameObjectManager>()->Add(player);
 
-    camera->SetPosition(player->GetPosition() - Math::vec2{ 400, 300 });
-
+    Math::ivec2 winSize = Engine::GetWindow().GetSize();
+    camera->SetPosition(player->GetPosition() - Math::vec2{ winSize.x * 0.5, winSize.y * 0.5 });
 
     // STAR
     Star* yellowStar = new Star({ 5000.0, 500.0 }, player);
@@ -90,7 +90,8 @@ void Mode1::Update(double dt)
 
     if (player != nullptr)
     {
-        Math::vec2 targetPos = player->GetPosition() - Math::vec2{ Engine::GetWindow().GetSize().x / 2.0, Engine::GetWindow().GetSize().y / 2.0 };
+        Math::vec2 winSize   = static_cast<Math::vec2>(Engine::GetWindow().GetSize());
+        Math::vec2 targetPos = player->GetPosition() - Math::vec2{ winSize.x * 0.5, winSize.y * 0.3 };
         camera->SetPosition(targetPos);
     }
 }
