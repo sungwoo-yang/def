@@ -29,22 +29,20 @@ void Bonfire::Draw(const Math::TransformationMatrix& camera_matrix)
 
 void Bonfire::Interact(CS230::GameObject* interactor)
 {
-    auto textManager = Engine::GetGameStateManager().GetGSComponent<WorldTextManager>();
-
     // F키를 누른 *첫 프레임*에만 저장 로직을 실행
     if (Engine::GetInput().KeyJustPressed(CS230::Input::Keys::F))
     {
         Player* player = dynamic_cast<Player*>(interactor);
-        if (player == nullptr)
-            return;
-
-        player->SetSavePoint(GetPosition());
-        Engine::GetLogger().LogEvent("Event: Bonfire interacted, save point updated!");
+        if (player != nullptr)
+        {
+            player->SetSavePoint(GetPosition() + Math::vec2({ 0, 50 }));
+            Engine::GetLogger().LogEvent("Event: Bonfire interacted, save point updated!");
+        }
     }
 
-    // F키를 *누르고 있는 동안* 계속 "저장됨" 텍스트 표시
+    auto textManager = Engine::GetGameStateManager().GetGSComponent<WorldTextManager>();
     if (textManager)
     {
-        textManager->ShowTextAbove(this, "Checkpoint Saved.");
+        textManager->ShowTextAbove(this, "Checkpoint Saved.", 0.3, CS200::YELLOW);
     }
 }

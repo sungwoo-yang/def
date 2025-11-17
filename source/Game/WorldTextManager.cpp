@@ -1,12 +1,16 @@
 #include "WorldTextManager.hpp"
 #include "CS200/NDC.hpp"
 #include "Engine/Camera.hpp"
-#include "Engine/Collision.hpp" // 충돌체 바운더리 확인용
+#include "Engine/Collision.hpp"
 #include "Engine/Engine.hpp"
 #include "Engine/GameObject.hpp"
-#include "Engine/Matrix.hpp" // Matrix 곱셈 연산자 사용
+#include "Engine/Matrix.hpp"
 #include "Engine/Window.hpp"
-#include <imgui.h>
+
+// ImGui 대신 엔진 폰트와 텍스처, 렌더러 헤더를 포함합니다.
+#include "CS200/IRenderer2D.hpp"
+#include "Engine/Font.hpp"
+#include "Engine/Texture.hpp"
 
 WorldTextManager::WorldTextManager() : camera(nullptr)
 {
@@ -15,7 +19,6 @@ WorldTextManager::WorldTextManager() : camera(nullptr)
 void WorldTextManager::Update([[maybe_unused]] double dt)
 {
     // 매 프레임 텍스트 목록을 비웁니다.
-    // 텍스트는 매 프레임 ShowText...()가 호출되어야만 유지됩니다.
     textJobs.clear();
 }
 
@@ -24,35 +27,34 @@ void WorldTextManager::SetCamera(CS230::Camera* cam)
     this->camera = cam;
 }
 
+// 렌더러의 스크린 좌표계(Y-Up)로 변환하도록 수정
 Math::vec2 WorldTextManager::WorldToScreen(Math::vec2 worldPos)
 {
     if (camera == nullptr)
-        return { -1000, -1000 };
+    {
+        return { -1000.0, -1000.0 }; // double 타입 사용
+    }
 
-    // 1. Mode1::Draw()와 동일한 View-Projection Matrix를 계산합니다.
+    // 1. 월드 -> NDC 변환
     Math::TransformationMatrix viewProj = CS200::build_ndc_matrix(Engine::GetWindow().GetSize()) * camera->GetMatrix();
+    Math::vec2                 ndcPos   = viewProj * worldPos; // vec2는 double 타입
+    Math::ivec2                winSize  = Engine::GetWindow().GetSize();
 
-    // 2. 월드 좌표(vec2)를 NDC 좌표(vec2)로 변환합니다.
-    // (엔진의 TransformationMatrix * vec2 연산자 사용)
-    Math::vec2 ndcPos = viewProj * worldPos;
-
-    // 3. NDC (-1 ~ +1)를 ImGui 화면 좌표 (0 ~ WindowSize)로 변환합니다.
-    // (ImGui의 Y좌표는 위에서 아래로 증가하므로 (1.0 - ndcPos.y) 사용)
-    Math::ivec2 winSize = Engine::GetWindow().GetSize();
-    float       screenX = (static_cast<float>(ndcPos.x) + 1.0f) * 0.5f * winSize.x;
-    float       screenY = (1.0f - static_cast<float>(ndcPos.y)) * 0.5f * winSize.y;
+    // 2. NDC -> 스크린 좌표 (0,0이 좌측 하단)
+    // C++20 스타일로 static_cast 사용 및 double로 연산
+    double screenX = (ndcPos.x + 1.0) * 0.5 * static_cast<double>(winSize.x);
+    double screenY = (ndcPos.y + 1.0) * 0.5 * static_cast<double>(winSize.y);
 
     return { screenX, screenY };
 }
 
-// 오브젝트의 충돌체 상단 10px 위에 텍스트 표시
-void WorldTextManager::ShowTextAbove(CS230::GameObject* obj, const std::string& text)
+// ShowTextAbove 함수는 변경 없습니다.
+void WorldTextManager::ShowTextAbove(CS230::GameObject* obj, const std::string& text, double scale, CS200::RGBA color)
 {
     if (obj == nullptr)
         return;
 
     Math::vec2 pos      = obj->GetPosition();
-    // 충돌체 정보를 가져와서 정확한 상단 위치를 계산합니다.
     auto       collider = obj->GetGOComponent<CS230::RectCollision>();
     if (collider)
     {
@@ -60,11 +62,11 @@ void WorldTextManager::ShowTextAbove(CS230::GameObject* obj, const std::string& 
         pos.y = collider->WorldBoundary().Top() + 15.0; // 충돌체 상단 + 15px
     }
 
-    textJobs.push_back({ text, pos, true });
+    textJobs.push_back({ text, pos, true, scale, color });
 }
 
-// 오브젝트의 충돌체 하단 10px 아래에 텍스트 표시
-void WorldTextManager::ShowTextBelow(CS230::GameObject* obj, const std::string& text)
+// ShowTextBelow 함수는 변경 없습니다.
+void WorldTextManager::ShowTextBelow(CS230::GameObject* obj, const std::string& text, double scale, CS200::RGBA color)
 {
     if (obj == nullptr)
         return;
@@ -77,38 +79,59 @@ void WorldTextManager::ShowTextBelow(CS230::GameObject* obj, const std::string& 
         pos.y = collider->WorldBoundary().Bottom() - 15.0; // 충돌체 하단 - 15px
     }
 
-    textJobs.push_back({ text, pos, false });
+    textJobs.push_back({ text, pos, false, scale, color });
 }
 
-void WorldTextManager::DrawImGui()
+// ImGui::DrawImGui() 대신 2D 렌더러를 사용하는 Draw() 함수로 구현
+void WorldTextManager::Draw()
 {
     if (textJobs.empty())
+    {
         return;
+    }
 
-    ImDrawList* draw_list = ImGui::GetForegroundDrawList();
+    // 엔진의 폰트 리소스 (main.cpp에서 0번으로 "Font_Simple.png"가 로드됨)
+    CS230::Font& font = Engine::GetFont(0);
 
     for (const auto& job : textJobs)
     {
-        Math::vec2 screenPos = WorldToScreen(job.worldPos);
-        ImVec2     textSize  = ImGui::CalcTextSize(job.text.c_str());
+        // 1. 텍스트를 텍스처로 렌더링 (엔진 폰트 기능 사용)
+        std::shared_ptr<CS230::Texture> textTexture = font.PrintToTexture(job.text, job.color);
 
-        // X축 중앙 정렬
-        ImVec2 textPos;
-        textPos.x = static_cast<float>(screenPos.x) - textSize.x * 0.5f;
+        if (textTexture == nullptr)
+        {
+            continue; // 텍스처 생성 실패
+        }
 
-        // Y축 정렬
+        // 2. 텍스처 크기와 변환된 스크린 좌표 가져오기
+        Math::ivec2 textureSize = textTexture->GetSize();
+        Math::vec2  screenPos   = WorldToScreen(job.worldPos); // Y-Up 스크린 좌표
+
+        const double scale = job.scale;
+
+        // 3. DemoText.cpp와 동일하게 텍스처의 '좌측 하단' 위치 계산
+        double scaledWidth  = static_cast<double>(textureSize.x) * scale;
+        double scaledHeight = static_cast<double>(textureSize.y) * scale;
+
+        Math::vec2 drawPos_BottomLeft; // 최종적으로 텍스처가 그려질 좌측 하단 위치
+        drawPos_BottomLeft.x = screenPos.x - scaledWidth * 0.5;
+
         if (job.alignAbove)
         {
-            textPos.y = static_cast<float>(screenPos.y) - textSize.y; // 텍스트의 하단이 worldPos에 오도록
+            // 텍스트의 하단을 job.worldPos의 스크린 Y좌표에 맞춤
+            drawPos_BottomLeft.y = screenPos.y;
         }
-        else
+        else // alignBelow
         {
-            textPos.y = static_cast<float>(screenPos.y); // 텍스트의 상단이 worldPos에 오도록
+            // 텍스트의 상단을 job.worldPos의 스크린 Y좌표에 맞춤
+            drawPos_BottomLeft.y = screenPos.y - scaledHeight;
         }
 
-        // 가독성을 위해 검은색 테두리(그림자)를 먼저 그립니다.
-        draw_list->AddText(ImVec2(textPos.x + 1, textPos.y + 1), IM_COL32(0, 0, 0, 255), job.text.c_str());
-        // 흰색 텍스트를 그립니다.
-        draw_list->AddText(textPos, IM_COL32(255, 255, 255, 255), job.text.c_str());
+        // 4. DemoText::drawText와 동일하게 변환 행렬 생성
+        Math::TransformationMatrix transform = Math::TranslationMatrix(drawPos_BottomLeft) * Math::ScaleMatrix(Math::vec2{ scale, scale });
+
+        // 5. Texture::Draw 호출 (내부적으로 IRenderer2D::DrawQuad 호출)
+        // 텍스처는 흰색으로 생성했으므로 틴트 없이 흰색으로 그립니다.
+        textTexture->Draw(transform, CS200::WHITE);
     }
 }

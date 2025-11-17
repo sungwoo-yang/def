@@ -45,13 +45,14 @@ void Mode1::Load()
 
     // SVG 로딩이 실제로는 비어있으므로, y=300을 플랫폼 상단으로 가정하고 배치합니다.
     double platformY = 200;
-    double signY     = platformY + 50; // 표지판이 플랫폼 위에 서 있도록 Y 위치 계산
-
-    gom->Add(new Sign({ 0.0, signY }, signSize, "AD keys to move"));
-    gom->Add(new Sign({ 100.0, signY }, signSize, "W or Space to Jump"));
+    double signY     = platformY + (signSize.y / 2.0); // 표지판이 플랫폼 위에 서 있도록 Y 위치 계산
 
     double platformY2 = 500.0;
     double signY2     = platformY2 + (signSize.y / 2.0);
+
+    gom->Add(new Sign({ 0.0, signY }, signSize, "AD keys to move"));
+    gom->Add(new Sign({ 200.0, signY }, signSize, "W or Space to Jump"));
+
     gom->Add(new Sign({ 1900.0, signY2 }, signSize, "LShift to Dash"));
 
     // 모닥불 (Bonfire)
@@ -61,17 +62,16 @@ void Mode1::Load()
 
     // 모닥불 튜토리얼 표지판
     gom->Add(new Sign({ 800.0, signY2 }, signSize, "Press 'F' at Bonfire to save."));
+
+    gom->Add(new Sign({ 1100.0, signY }, signSize, "Press 'R' to Respawn"));
+    gom->Add(new Sign({ 2700.0, signY }, signSize, "Hold 'LShift' to Sprint"));
+    gom->Add(new Sign({ 4500.0, signY }, signSize, "Space to Parry"));
 }
 
 void Mode1::Update(double dt)
 {
     UpdateGSComponents(dt);
     GetGSComponent<CS230::GameObjectManager>()->UpdateAll(dt);
-
-    if (player != nullptr)
-    {
-        player->interactionTarget = nullptr; // <--- 여기에 초기화 코드를 추가
-    }
 
     GetGSComponent<CS230::GameObjectManager>()->CollisionTest();
 
@@ -91,15 +91,33 @@ void Mode1::Draw()
 {
     CS200::IRenderer2D& renderer = Engine::GetRenderer2D();
     Engine::GetWindow().Clear(CS200::BLACK);
-    Math::ivec2                display_size_int       = Engine::GetWindow().GetSize();
+    Math::ivec2 display_size_int = Engine::GetWindow().GetSize();
+
+    // --- 1. 월드 좌표계 렌더링 (카메라 적용) ---
     Math::TransformationMatrix view_projection_matrix = CS200::build_ndc_matrix(display_size_int) * camera->GetMatrix();
     renderer.BeginScene(view_projection_matrix);
+
     GetGSComponent<CS230::GameObjectManager>()->DrawAll(view_projection_matrix);
+
+    renderer.EndScene();
+
+    // --- 2. 스크린 좌표계 렌더링 (카메라 미적용) ---
+    // (DemoText.cpp와 동일한 방식)
+    Math::TransformationMatrix screen_matrix = CS200::build_ndc_matrix(display_size_int);
+    renderer.BeginScene(screen_matrix);
+
+    // WorldTextManager가 스크린 좌표계에서 텍스트를 그리도록 호출
+    if (worldTextManager != nullptr)
+    {
+        worldTextManager->Draw();
+    }
+
     renderer.EndScene();
 }
 
 void Mode1::DrawImGui()
 {
+    // 플레이어 디버그 창 (ImGui)
     if (player != nullptr && ImGui::Begin("Mode1 Player Debug"))
     {
         ImGui::Text("Player Position: (%.1f, %.1f)", player->GetPosition().x, player->GetPosition().y);
@@ -107,7 +125,6 @@ void Mode1::DrawImGui()
         ImGui::Text("Is Jumping/Falling: %s", player->isJumping ? "Yes" : "No");
         ImGui::Text("Interaction Target: %s", player->interactionTarget ? player->interactionTarget->TypeName().c_str() : "None");
 
-        // currentPlatformIndex는 현재 단순 플래그 역할만 함
         if (!player->isJumping)
         {
             ImGui::Text("On Platform: Yes");
@@ -124,11 +141,6 @@ void Mode1::DrawImGui()
         ImGui::Text("Shift Hold Time: %.2f", player->shiftHoldTimer);
     }
     ImGui::End();
-
-    if (worldTextManager != nullptr)
-    {
-        worldTextManager->DrawImGui();
-    }
 }
 
 void Mode1::Unload()

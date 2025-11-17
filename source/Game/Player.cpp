@@ -18,7 +18,7 @@ namespace
         { -20, -60 },
         {  20,  60 }
     };
-    constexpr Math::vec2 PLAYER_COLLISION_SIZE{ 40.0, 120.0 };
+    constexpr Math::vec2 PLAYER_COLLISION_SIZE{ 40.0, 80.0 };
 }
 
 Player::Player(Math::vec2 start_pos)
@@ -111,12 +111,11 @@ void Player::HandleInput(double dt)
         shieldComponent->HandleInput(dt);
     }
 
-    if (input.KeyJustPressed(CS230::Input::Keys::F))
+    if (input.KeyJustPressed(CS230::Input::Keys::R))
     {
-        if (interactionTarget != nullptr)
-        {
-            isInteracting = true;
-        }
+        ResetState();
+        Engine::GetLogger().LogEvent("Event: Player Respawned (R)");
+        return; // 리스폰 시 이번 프레임의 다른 이동 입력은 무시
     }
 
     const bool shiftDown           = input.KeyDown(CS230::Input::Keys::LShift);
@@ -203,13 +202,14 @@ bool Player::CanCollideWith(GameObjectTypes other_object_type)
 
 void Player::ResolveCollision(GameObject* other_object)
 {
-    // WorldTextManager를 가져옵니다.
-    auto textManager = Engine::GetGameStateManager().GetGSComponent<WorldTextManager>();
+    // WorldTextManager와 Input을 가져옵니다.
+    auto  textManager = Engine::GetGameStateManager().GetGSComponent<WorldTextManager>();
+    auto& input       = Engine::GetInput();
 
     // 1. 충돌한 오브젝트의 타입을 확인
     if (other_object->Type() == GameObjectTypes::Floor)
     {
-        // 2. 바닥(Floor)인 경우: 기존의 착지 및 측면 충돌 로직 수행
+        // 2. 바닥(Floor)인 경우: (기존 로직 - 변경 없음)
         CS230::RectCollision* my_collider = GetGOComponent<CS230::RectCollision>();
         if (!my_collider)
             return;
@@ -249,21 +249,27 @@ void Player::ResolveCollision(GameObject* other_object)
     else if (other_object->Type() == GameObjectTypes::Sign || other_object->Type() == GameObjectTypes::Bonfire)
     {
         // 3. 표지판(Sign) 또는 모닥불(Bonfire)인 경우:
-        //    물리적으로 밀어내지 않고, interactionTarget으로만 설정
-        interactionTarget = other_object;
+        interactionTarget = other_object; // 상호작용 대상 설정
 
-        // "Press 'F'" 프롬프트를 오브젝트 '아래'에 요청
-        if (textManager != nullptr)
+        // F키가 방금 눌렸는지 확인
+        if (input.KeyJustPressed(CS230::Input::Keys::F))
         {
-            if (isInteracting == true)
+            isInteracting = true; // 상호작용 상태 시작
+        }
+
+        // F키가 (방금 눌렸거나) 계속 눌리고 있는지 확인
+        if (isInteracting)
+        {
+            // 튜토리얼 자막 / 저장 완료 메시지 표시 (화면 상단 고정)
+            // Sign.cpp나 Bonfire.cpp의 Interact()에서 ShowTextAbove를 호출합니다.
+            other_object->Interact(this);
+        }
+        else
+        {
+            if (textManager != nullptr)
             {
-                // 2. 이미 F키를 누른 상태라면, 튜토리얼/자막을 계속 띄움
-                other_object->Interact(this);
-            }
-            else
-            {
-                // 3. F키를 누르지 않았다면, "Press 'F'" 프롬프트를 띄움
-                textManager->ShowTextBelow(other_object, "Press 'F'");
+                // 프롬프트 표시 (흰색, 월드 좌표 추적)
+                textManager->ShowTextBelow(other_object, "Press 'F'", 0.4, CS200::WHITE);
             }
         }
     }
@@ -274,7 +280,7 @@ void Player::Draw(const Math::TransformationMatrix& camera_matrix)
     CS200::IRenderer2D&        renderer  = Engine::GetRenderer2D();
     Math::TransformationMatrix transform = GetMatrix() * Math::ScaleMatrix(PLAYER_COLLISION_SIZE);
 
-    renderer.DrawRectangle(transform, CS200::WHITE, CS200::CLEAR, 0.0);
+    renderer.DrawRectangle(transform, CS200::GREEN, CS200::CLEAR, 0.0);
 
     if (shieldComponent)
     {

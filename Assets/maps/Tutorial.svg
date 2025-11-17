@@ -46,15 +46,15 @@
          id="path1" />
       <path
          style="fill:#000000;stroke:#ffffff;stroke-width:7"
-         d="M 200,200 H 300 v 100 H 200 Z"
+         d="M 300,200 H 400 v 100 H 300 Z"
          id="stair1" />
       <path
          style="fill:#000000;stroke:#ffffff;stroke-width:7"
-         d="M 300,200 H 400 v 200 H 300 Z"
+         d="M 400,200 H 500 v 200 H 400 Z"
          id="stair2" />
       <path
          style="fill:#000000;stroke:#ffffff;stroke-width:7"
-         d="M 400,200 H 1000 v 300 H 400 Z"
+         d="M 500,200 H 1000 v 300 H 500 Z"
          id="block1" />
       <path
          style="fill:#000000;stroke:#ffffff;stroke-width:7"

@@ -35,16 +35,15 @@ namespace CS200
      * - Performing fast bitwise color operations
      * - Interfacing with graphics APIs that expect packed colors
      */
-    using RGBA = uint32_t;
-
-    /** \brief Pure white color (255, 255, 255, 255) - fully opaque white */
-    constexpr RGBA WHITE = 0xffffffff;
-
-    /** \brief Pure black color (0, 0, 0, 255) - fully opaque black */
-    constexpr RGBA BLACK = 0x000000ff;
-
-    /** \brief Transparent color (0, 0, 0, 0) - completely transparent black */
-    constexpr RGBA CLEAR = 0x00000000;
+    using RGBA            = uint32_t;
+    constexpr RGBA WHITE  = 0xffffffff;
+    constexpr RGBA BLACK  = 0x000000ff;
+    constexpr RGBA RED    = 0xff0000ff;
+    constexpr RGBA GREEN  = 0x00ff00ff;
+    constexpr RGBA BLUE   = 0x0000ffff;
+    constexpr RGBA CYAN   = 0x00ffffff;
+    constexpr RGBA YELLOW = 0xffff00ff;
+    constexpr RGBA CLEAR  = 0x00000000;
 
     /**
      * \brief Convert packed RGBA color to floating-point component array
