@@ -46,11 +46,38 @@ void Mode1::Load()
     camera->SetPosition(player->GetPosition() - Math::vec2{ winSize.x * 0.5, winSize.y * 0.5 });
 
     // STAR
-    TargetStar* destStar = new TargetStar({ 5500.0, 750.0 });
-    gom->Add(destStar);
+    std::vector<TargetStar*> targetStars;
 
-    Star* yellowStar = new Star({ 5000.0, 750.0 }, player, destStar);
+    // 1. 기존 (5500, 750)
+    TargetStar* t1 = new TargetStar({ 5500.0, 750.0 });
+    gom->Add(t1);
+    targetStars.push_back(t1);
+
+    TargetStar* t2 = new TargetStar({ 4500.0, 750.0 });
+    gom->Add(t2);
+    targetStars.push_back(t2);
+
+    TargetStar* t3 = new TargetStar({ 4800.0, 1000.0 });
+    gom->Add(t3);
+    targetStars.push_back(t3);
+
+    TargetStar* t4 = new TargetStar({ 5200.0, 1000.0 });
+    gom->Add(t4);
+    targetStars.push_back(t4);
+
+    TargetStar* t5 = new TargetStar({ 5500.0, 750.0 });
+    gom->Add(t5);
+    targetStars.push_back(t3);
+
+    TargetStar* t6 = new TargetStar({ 6500.0, 750.0 });
+    gom->Add(t6);
+    targetStars.push_back(t4);
+
+    Star* yellowStar = new Star({ 5000.0, 750.0 }, player, targetStars, StarType::Yellow);
     gom->Add(yellowStar);
+
+    Star* redStar = new Star({ 7000.0, 750.0 }, player, targetStars, StarType::Red);
+    gom->Add(redStar);
 
     // 요청하신 표지판들을 생성합니다. (Y 좌표는 플랫폼 높이에 맞게 조정해야 합니다)
     Math::vec2 signSize = { 50.0, 25.0 }; // 표지판 기본 크기
@@ -62,22 +89,24 @@ void Mode1::Load()
     double platformY2 = 500.0;
     double signY2     = platformY2 + (signSize.y / 2.0);
 
-    gom->Add(new Sign({ 0.0, signY }, signSize, "AD keys to move"));
+    gom->Add(new Sign({ 0.0, signY }, signSize, "A / D to Move"));
     gom->Add(new Sign({ 200.0, signY }, signSize, "W or Space to Jump"));
-
-    gom->Add(new Sign({ 1900.0, signY2 }, signSize, "LShift to Dash"));
-
     // 모닥불 (Bonfire)
     Math::vec2 bonfireSize = { 25.0, 25.0 };
-    double     bonfireY    = platformY2 + (bonfireSize.y / 2.0);
-    gom->Add(new Bonfire({ 900.0, bonfireY }, bonfireSize));
+    double     bonfire1Y   = platformY2 + (bonfireSize.y / 2.0);
+    gom->Add(new Bonfire({ 900.0, bonfire1Y }, bonfireSize));
 
     // 모닥불 튜토리얼 표지판
-    gom->Add(new Sign({ 800.0, signY2 }, signSize, "Press 'F' at Bonfire to save."));
-
+    gom->Add(new Sign({ 800.0, signY2 }, signSize, "Press 'F' at Bonfire to Save"));
+    gom->Add(new Sign({ 1900.0, signY2 }, signSize, "Press LShift to Dash"));
     gom->Add(new Sign({ 1100.0, signY }, signSize, "Press 'R' to Respawn"));
     gom->Add(new Sign({ 2700.0, signY }, signSize, "Hold 'LShift' to Sprint"));
-    gom->Add(new Sign({ 4500.0, signY }, signSize, "Space to Parry"));
+    gom->Add(new Sign({ 4500.0, signY }, signSize, "Hold RMB: Shield (Reflects Light, Slows Move)"));
+    gom->Add(new Sign({ 5000.0, signY }, signSize, "Reflect Light to Hit the Star!"));
+
+    double bonfire2Y = platformY + (bonfireSize.y / 2.0);
+    gom->Add(new Bonfire({ 6000.0, bonfire2Y }, bonfireSize));
+    gom->Add(new Sign({ 5900.0, signY }, signSize, "Red Lasers Hurt! Parry with Timed Block!\n Be sure to Save at the Bonfire ahead!"));
 }
 
 void Mode1::Update(double dt)

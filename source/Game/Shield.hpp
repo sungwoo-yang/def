@@ -65,13 +65,14 @@ private:
     CS230::GameObject* owner;
     double             shieldAngle  = PI / 2.0;
     double             shieldLength = 120.0;
+    double             orbitRadius  = 80.0;
 
-    // [[ --- 수정: 쉴드 공전 반지름 추가 --- ]]
-    double orbitRadius = 80.0; // 플레이어 중심에서 120 거리
-
-    Math::vec2 shieldCenter; // 쉴드의 중심점 (공전 궤도상의 점)
+    Math::vec2 shieldCenter;
     Math::vec2 shieldStart;
     Math::vec2 shieldEnd;
+
+    Math::vec2 prevShieldStart;
+    Math::vec2 prevShieldEnd;
 
     CS200::RGBA          shieldColor = COLOR_CYAN;
     std::array<float, 4> currentShieldColor{};

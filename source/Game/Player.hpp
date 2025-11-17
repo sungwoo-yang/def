@@ -83,4 +83,9 @@ private:
 
     Math::vec2 startPosition;
     Math::vec2 previousPosition;
+
+    double       jumpBufferTimer = 0.0; // 점프 키 선입력 기억 시간
+    double       coyoteTimer     = 0.0; // 땅에서 떨어져도 점프 가능한 시간
+    const double jumpBufferTime  = 0.1; // 0.1초간 선입력 허용
+    const double coyoteTime      = 0.1; // 0.1초간 코요테 타임 허용
 };

@@ -58,8 +58,8 @@ void WorldTextManager::ShowTextAbove(CS230::GameObject* obj, const std::string& 
     auto       collider = obj->GetGOComponent<CS230::RectCollision>();
     if (collider)
     {
-        pos.x = obj->GetPosition().x;                   // 중심 X 사용
-        pos.y = collider->WorldBoundary().Top() + 15.0; // 충돌체 상단 + 15px
+        pos.x = obj->GetPosition().x;                    // 중심 X 사용
+        pos.y = collider->WorldBoundary().Top() + 100.0; // 충돌체 상단 + 15px
     }
 
     textJobs.push_back({ text, pos, true, scale, color });

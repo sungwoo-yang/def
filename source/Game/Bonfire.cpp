@@ -43,6 +43,6 @@ void Bonfire::Interact(CS230::GameObject* interactor)
     auto textManager = Engine::GetGameStateManager().GetGSComponent<WorldTextManager>();
     if (textManager)
     {
-        textManager->ShowTextAbove(this, "Checkpoint Saved.", 0.3, CS200::YELLOW);
+        textManager->ShowTextAbove(this, "Checkpoint Saved.", 0.3, CS200::WHITE);
     }
 }

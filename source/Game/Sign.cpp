@@ -36,7 +36,7 @@ void Sign::Interact([[maybe_unused]] CS230::GameObject* interactor)
     if (textManager)
     {
         // 튜토리얼 메시지를 오브젝트 '위에' 표시
-        textManager->ShowTextAbove(this, message, 0.4, CS200::CYAN);
+        textManager->ShowTextAbove(this, message, 0.5, CS200::WHITE);
     }
 
     // F키를 누른 첫 프레임에만 로그를 남깁니다.

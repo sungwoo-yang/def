@@ -146,17 +146,16 @@ void Shield::Update(double dt)
 
 void Shield::UpdatePosition()
 {
+    prevShieldStart = shieldStart;
+    prevShieldEnd   = shieldEnd;
+
     const Math::vec2 ownerPos = owner->GetPosition();
 
-    // 쉴드 중심점: 플레이어 위치 + 각도 방향 * 반지름
-    // (shieldAngle은 마우스 방향)
     double dirX = std::cos(shieldAngle);
     double dirY = std::sin(shieldAngle);
 
     shieldCenter = ownerPos + Math::vec2{ dirX * orbitRadius, dirY * orbitRadius };
 
-    // 쉴드 선분: 중심점에서 '각도의 수직 방향'으로 뻗어나감 (접선)
-    // 마우스 방향(반지름)과 수직인 벡터: {-sin, cos}
     double tanX = -dirY;
     double tanY = dirX;
 
@@ -195,37 +194,42 @@ void Shield::HandleHit(bool parrySuccess)
 
 std::vector<std::pair<Math::vec2, Math::vec2>> Shield::GetSegments() const
 {
-    return {
-        { shieldStart, shieldEnd }
-    };
+    std::vector<std::pair<Math::vec2, Math::vec2>> segments;
+
+    // 1. Current
+    segments.push_back({ shieldStart, shieldEnd });
+
+    // 2. Previous
+    segments.push_back({ prevShieldStart, prevShieldEnd });
+
+    // 3. Middle (Interpolated) - Extra safety for very fast moves
+    Math::vec2 midStart = (shieldStart + prevShieldStart) * 0.5;
+    Math::vec2 midEnd   = (shieldEnd + prevShieldEnd) * 0.5;
+    segments.push_back({ midStart, midEnd });
+
+    return segments;
 }
 
 void Shield::UpdateShieldColor(double dt)
 {
-    // 쉴드가 빨간색(피격 상태)인지 확인
     bool isTargetRed = (targetShieldColor[0] > 0.9f && targetShieldColor[1] < 0.1f && targetShieldColor[2] < 0.1f);
 
     if (isTargetRed)
     {
-        // 빨간색이면, 복구 시간까지 타이머 증가
         shieldHitTimer += dt;
         if (shieldHitTimer >= shieldColorRecoveryTime)
         {
-            // 복구 시간이 되면 기본 색상(시안)으로 타겟 변경
             targetShieldColor = CS200::unpack_color(CS200::CYAN);
         }
     }
     else
     {
         shieldHitTimer = shieldColorRecoveryTime;
-        // 타겟 색상이 시안이 아니라면 (예: 초기화, 패리 성공 등)
         if (!(targetShieldColor[0] < 0.1f && targetShieldColor[1] > 0.9f && targetShieldColor[2] > 0.9f))
         {
             targetShieldColor = CS200::unpack_color(CS200::CYAN);
         }
     }
-
-    // 현재 색상(currentShieldColor)을 목표 색상(targetShieldColor)으로 서서히 보간
     ease_color_to_target(currentShieldColor, targetShieldColor, dt, 5.0);
     shieldColor = CS200::pack_color(currentShieldColor);
 }
