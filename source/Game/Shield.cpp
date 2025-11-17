@@ -58,50 +58,34 @@ Shield::Shield(CS230::GameObject* owner) : owner(owner), shieldHitTimer(shieldCo
 
 void Shield::HandleInput([[maybe_unused]] double dt)
 {
-    // 쉴드가 얼어있으면 입력을 받지 않음
     if (isShieldFrozen)
-    {
         return;
-    }
 
-    auto&       input          = Engine::GetInput();
+    auto& input = Engine::GetInput();
+
+    // --- 마우스 회전 로직 (기존과 동일) ---
     Math::vec2  mouseScreenPos = input.GetMousePosition();
     Math::ivec2 winSize        = Engine::GetWindow().GetSize();
     Math::vec2  winSizeVec     = { static_cast<double>(winSize.x), static_cast<double>(winSize.y) };
 
-    // 카메라 위치 가져오기 (월드 좌표 변환을 위해)
     auto       camera    = Engine::GetGameStateManager().GetGSComponent<CS230::Camera>();
     Math::vec2 cameraPos = camera ? camera->GetPosition() : Math::vec2{ 0, 0 };
 
-    // 화면 중앙 좌표 (플레이어가 화면 중앙이나 특정 위치에 있다고 가정할 때의 기준점)
-    // 주의: 현재 카메라는 플레이어를 화면 하단 1/4 지점에 둡니다.
-    // 더 정확한 조준을 위해 '플레이어의 화면상 위치'를 기준으로 계산하는 것이 좋으나,
-    // 여기서는 마우스의 월드 좌표를 직접 계산합니다.
-
-    // 마우스 좌표를 월드 좌표로 변환
-    // (Screen -> NDC -> World 역변환 대신, 간단히 카메라 위치를 더하는 방식으로 근사)
-    // 엔진의 좌표계(Y-Up)와 SDL 마우스(Y-Down) 차이 보정
-    // 화면 좌하단이 (0,0)인 OpenGL 좌표계 기준 마우스 위치:
+    // OpenGL 좌표계(좌하단 0,0)로 변환
     Math::vec2 mouseGLPos = { mouseScreenPos.x, winSizeVec.y - mouseScreenPos.y };
 
-    // 카메라의 좌하단 월드 좌표
-    // 카메라의 Position은 화면 중앙을 가리키므로, 좌하단은:
+    // 카메라 중심이 아닌, 실제 카메라가 비추는 영역의 좌하단 좌표 계산
+    // (카메라 위치는 화면 중심을 의미함)
     Math::vec2 cameraBottomLeft = cameraPos - (winSizeVec * 0.5);
+    Math::vec2 mouseWorldPos    = cameraBottomLeft + mouseGLPos;
 
-    // 마우스의 실제 월드 좌표
-    Math::vec2 mouseWorldPos = cameraBottomLeft + mouseGLPos;
-
-    // 플레이어(쉴드 주인)에서 마우스를 향하는 벡터
     Math::vec2 dir = mouseWorldPos - owner->GetPosition();
-
-    // 아크탄젠트로 각도 계산하여 쉴드 회전
-    shieldAngle = std::atan2(dir.y, dir.x);
+    shieldAngle    = std::atan2(dir.y, dir.x);
 
 
-    // [[ 2. 우클릭 패링 적용 ]]
+    // [[ 2. 우클릭 패링 시도 (누르는 순간) ]]
     if (input.MouseButtonJustPressed(CS230::Input::MouseButton::Right))
     {
-        // 패링 타이밍 윈도우가 활성화된 상태라면 패리 시도
         if (parryWindowActive)
         {
             TryParry();
@@ -132,7 +116,7 @@ bool Shield::ConsumeParryState()
 bool Shield::IsGuardUp() const
 {
     // 쉴드가 얼지 않았고(쿨타임 아님), 스페이스바를 누르고 있으면 가드 상태로 판정
-    return !isShieldFrozen && Engine::GetInput().KeyDown(CS230::Input::Keys::Space);
+    return !isShieldFrozen && Engine::GetInput().MouseButtonDown(CS230::Input::MouseButton::Right);
 }
 
 void Shield::Update(double dt)
@@ -173,8 +157,10 @@ void Shield::UpdatePosition()
 
 void Shield::Draw(CS200::IRenderer2D& renderer, const Math::TransformationMatrix& camera_matrix) const
 {
-    // 카메라 매트릭스가 적용된 좌표로 라인을 그림
-    renderer.DrawLine(camera_matrix * shieldStart, camera_matrix * shieldEnd, shieldColor, 3.0);
+    if (isShieldFrozen || IsGuardUp())
+    {
+        renderer.DrawLine(camera_matrix * shieldStart, camera_matrix * shieldEnd, shieldColor, 3.0);
+    }
 }
 
 void Shield::HandleHit(bool parrySuccess)
