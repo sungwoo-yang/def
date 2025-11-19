@@ -57,7 +57,6 @@ namespace Math
         return v1.x * v2.x + v1.y * v2.y;
     }
 
-    // 2D 벡터의 법선 (시계방향 90도 회전)
     inline vec2 GetPerpendicular(const vec2& v)
     {
         return { v.y, -v.x };

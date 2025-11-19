@@ -53,9 +53,9 @@ set(SOURCE_CODE
     Engine/Window.hpp Engine/Window.cpp
      
     Game/Bonfire.hpp Game/Bonfire.cpp
+    Game/RedLaser.hpp Game/RedLaser.cpp
     Game/Mode1.h Game/Mode1.cpp
     Game/Player.hpp Game/Player.cpp
-    Game/RedLaser.hpp Game/RedLaser.cpp
     Game/Shield.hpp Game/Shield.cpp
     Game/Sign.hpp Game/Sign.cpp
     Game/Star.hpp Game/Star.cpp

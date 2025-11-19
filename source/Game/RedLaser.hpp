@@ -32,7 +32,6 @@ private:
     Player*                  player;
     std::vector<TargetStar*> targets;
 
-    // 레이저가 그려질 선분들 (시작점, 끝점, 색상)
     struct BeamSegment
     {
         Math::vec2  p1, p2;
@@ -41,6 +40,6 @@ private:
 
     std::vector<BeamSegment> beams;
 
-    bool   isCalculated = false; // 판정 완료 여부
-    double lifeTime     = 0.2;   // 레이저 잔상 표시 시간 (0.2초)
+    bool   isCalculated = false;
+    double lifeTime     = 0.2;
 };

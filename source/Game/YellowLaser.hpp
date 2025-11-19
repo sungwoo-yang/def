@@ -8,12 +8,11 @@
 #include <vector>
 
 class Player;
-class TargetStar; // [추가] 전방 선언
+class TargetStar;
 
 class YellowLaser : public CS230::GameObject
 {
 public:
-    // [수정] TargetStar* 인자 추가
     YellowLaser(Math::vec2 startPos, Math::vec2 direction, Player* player, const std::vector<TargetStar*>& targets);
 
     void Update(double dt) override;

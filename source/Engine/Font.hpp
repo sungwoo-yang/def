@@ -152,7 +152,7 @@ namespace CS230
 
         CS200::Image             original_image;
         std::shared_ptr<Texture> texture_ptr;
-        static constexpr int     num_chars = 'z' - ' ' + 1;
+        static constexpr int     num_chars = '~' - ' ' + 1;
         Math::irect              char_rects[num_chars];
 
         std::unordered_map<std::string, std::shared_ptr<Texture>> text_cache;

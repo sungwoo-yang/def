@@ -70,7 +70,6 @@ void Player::Update(double dt)
     interactionTarget = nullptr;
     previousPosition  = GetPosition();
 
-    // [[ 1. 타이머 업데이트 ]]
     if (jumpBufferTimer > 0.0)
         jumpBufferTimer -= dt;
     if (coyoteTimer > 0.0)
@@ -79,19 +78,13 @@ void Player::Update(double dt)
     HandleInput(dt);
     dashComponent.UpdateTimers(dt);
 
-    // [[ 2. 중력 적용 로직 개선 ]]
     bool applyGravity = true;
     if (dashComponent.IsDashing() && dashComponent.disableGravityOnDash)
     {
         applyGravity = false;
     }
-    // isJumping 대신 coyoteTimer를 사용하여 '공중' 판정
-    // (땅에 있으면 coyoteTimer가 계속 리셋됨)
     else if (coyoteTimer > 0.0)
     {
-        // 땅에 붙어있거나 코요테 타임 중이면 중력 0 (미끄러짐 방지)
-        // 단, 점프 시작 직후에는 중력이 적용되어야 하므로 velocityY < 0 일때만
-        // ...하지만 간단히 기존 isJumping 로직을 유지하되 보조적으로 사용
     }
 
     if (applyGravity)
@@ -99,7 +92,6 @@ void Player::Update(double dt)
         velocityY -= gravity * dt;
     }
 
-    // ... (속도 설정 및 GameObject::Update) ...
     double finalVelX = GetVelocity().x;
     if (dashComponent.IsDashing())
     {
@@ -107,7 +99,6 @@ void Player::Update(double dt)
     }
     SetVelocity({ finalVelX, velocityY });
 
-    // [중요] 매 프레임 '공중' 상태로 가정 (충돌 처리에서 땅에 닿으면 해제)
     isJumping            = true;
     currentPlatformIndex = std::nullopt;
 
@@ -200,9 +191,8 @@ void Player::HandleInput(double dt)
             velocityY = jumpStrength;
             isJumping = true;
 
-            // 점프 사용 처리
             jumpBufferTimer = 0.0;
-            coyoteTimer     = 0.0; // 즉시 공중 상태로 전환
+            coyoteTimer     = 0.0; 
 
             Engine::GetLogger().LogEvent("Event: Player Jump (Buffered/Coyote)");
         }
@@ -229,14 +219,11 @@ bool Player::CanCollideWith(GameObjectTypes other_object_type)
 
 void Player::ResolveCollision(GameObject* other_object)
 {
-    // WorldTextManager와 Input을 가져옵니다.
     auto  textManager = Engine::GetGameStateManager().GetGSComponent<WorldTextManager>();
     auto& input       = Engine::GetInput();
 
-    // 1. 충돌한 오브젝트의 타입을 확인
     if (other_object->Type() == GameObjectTypes::Floor)
     {
-        // 2. 바닥(Floor)인 경우: (기존 로직 - 변경 없음)
         CS230::RectCollision* my_collider = GetGOComponent<CS230::RectCollision>();
         if (!my_collider)
             return;
@@ -257,63 +244,51 @@ void Player::ResolveCollision(GameObject* other_object)
         double platform_left   = other_box.Left();
         double platform_right  = other_box.Right();
 
-        // [2] 상태 판정 (이전 프레임 기준)
         bool was_above = prev_bottom >= platform_top;
         bool was_below = prev_top <= platform_bottom;
         bool was_left  = prev_right <= platform_left;
         bool was_right = prev_left >= platform_right;
 
-        // [3] 겹침 깊이 계산 (현재 프레임 기준)
-        double overlap_bottom = my_box.Top() - other_box.Bottom(); // 머리가 뚫고 들어간 깊이
-        double overlap_top    = other_box.Top() - my_box.Bottom(); // 발이 뚫고 들어간 깊이
-        double overlap_left   = my_box.Right() - other_box.Left(); // 오른쪽으로 뚫고 들어간 깊이
-        double overlap_right  = other_box.Right() - my_box.Left(); // 왼쪽으로 뚫고 들어간 깊이
+        double overlap_bottom = my_box.Top() - other_box.Bottom(); 
+        double overlap_top    = other_box.Top() - my_box.Bottom(); 
+        double overlap_left   = my_box.Right() - other_box.Left(); 
+        double overlap_right  = other_box.Right() - my_box.Left(); 
 
-        // 수직/수평 겹침 여부 확인
         bool horizontal_overlap = my_box.Right() > other_box.Left() && my_box.Left() < other_box.Right();
         bool vertical_overlap   = my_box.Top() > other_box.Bottom() && my_box.Bottom() < other_box.Top();
 
         if (!horizontal_overlap || !vertical_overlap)
-            return; // 실제 충돌 아님
+            return; 
 
-        // [4] 충돌 해결 로직
 
-        // Case 1: 착지 (Falling & Was Above)
         if (velocityY <= 0 && was_above && horizontal_overlap)
         {
             SetPosition({ GetPosition().x, platform_top + (PLAYER_COLLISION_SIZE.y / 2.0) });
             velocityY = 0.0;
             isJumping = false;
 
-            // [[ 5. 착지 시 코요테 타임 충전 ]]
             coyoteTimer = coyoteTime;
         }
-        // Case 2: 천장 충돌 (Rising & Was Below)
         else if (velocityY > 0 && was_below && horizontal_overlap)
         {
             SetPosition({ GetPosition().x, platform_bottom - (PLAYER_COLLISION_SIZE.y / 2.0) });
             velocityY = 0.0;
         }
-        // Case 3: 왼쪽 벽 충돌 (Moving Right & Was Left)
         else if (GetVelocity().x > 0 && was_left && vertical_overlap)
         {
             SetPosition({ platform_left - (PLAYER_COLLISION_SIZE.x / 2.0), GetPosition().y });
             SetVelocity({ 0.0, GetVelocity().y });
         }
-        // Case 4: 오른쪽 벽 충돌 (Moving Left & Was Right)
         else if (GetVelocity().x < 0 && was_right && vertical_overlap)
         {
             SetPosition({ platform_right + (PLAYER_COLLISION_SIZE.x / 2.0), GetPosition().y });
             SetVelocity({ 0.0, GetVelocity().y });
         }
-        // Case 5: 그 외 (이미 겹쳐있거나 판정 애매함) -> MTV(최소 침투 깊이)로 밀어내기
         else
         {
-            // 가장 얕은 겹침을 찾아서 그 방향으로 밀어냅니다.
-            // (머리 박치기 시 overlap_bottom이 가장 작을 것이므로 아래로 밀려남)
 
             double min_overlap = overlap_bottom;
-            int    axis        = 0; // 0: bottom, 1: top, 2: left, 3: right
+            int    axis        = 0;
 
             if (overlap_top < min_overlap)
             {
@@ -333,24 +308,23 @@ void Player::ResolveCollision(GameObject* other_object)
 
             switch (axis)
             {
-                case 0: // 위로 뚫음 -> 아래로 밀기 (천장)
+                case 0:
                     SetPosition({ GetPosition().x, platform_bottom - (PLAYER_COLLISION_SIZE.y / 2.0) });
                     if (velocityY > 0)
                         velocityY = 0.0;
                     break;
-                case 1: // 아래로 뚫음 -> 위로 밀기 (바닥)
+                case 1:
                     SetPosition({ GetPosition().x, platform_top + (PLAYER_COLLISION_SIZE.y / 2.0) });
                     if (velocityY < 0)
                         velocityY = 0.0;
                     isJumping = false;
 
-                    // [[ 5. 착지 시 코요테 타임 충전 ]]
                     coyoteTimer = coyoteTime;
                     break;
-                case 2: // 오른쪽으로 뚫음 -> 왼쪽으로 밀기
+                case 2:
                     SetPosition({ platform_left - (PLAYER_COLLISION_SIZE.x / 2.0), GetPosition().y });
                     break;
-                case 3: // 왼쪽으로 뚫음 -> 오른쪽으로 밀기
+                case 3:
                     SetPosition({ platform_right + (PLAYER_COLLISION_SIZE.x / 2.0), GetPosition().y });
                     break;
             }
@@ -358,13 +332,11 @@ void Player::ResolveCollision(GameObject* other_object)
     }
     else if (other_object->Type() == GameObjectTypes::Sign || other_object->Type() == GameObjectTypes::Bonfire)
     {
-        // 3. 표지판(Sign) 또는 모닥불(Bonfire)인 경우:
-        interactionTarget = other_object; // 상호작용 대상 설정
+        interactionTarget = other_object;
 
-        // F키가 방금 눌렸는지 확인
         if (input.KeyJustPressed(CS230::Input::Keys::F))
         {
-            isInteracting = true; // 상호작용 상태 시작
+            isInteracting = true;
         }
 
         if (isInteracting)
@@ -375,8 +347,7 @@ void Player::ResolveCollision(GameObject* other_object)
         {
             if (textManager != nullptr)
             {
-                // 프롬프트 표시 (흰색, 월드 좌표 추적)
-                textManager->ShowTextBelow(other_object, "Press 'F'", 0.4, CS200::WHITE);
+                textManager->ShowTextBelow(other_object, "Press 'F'", 0.5, CS200::WHITE);
             }
         }
     }

@@ -71,10 +71,10 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
         Engine& engine = Engine::Instance();
         engine.Start("Sungwoo Yang");
 
-        engine.AddFont("Assets/fonts/Font_Simple.png");
         engine.AddFont("Assets/fonts/Font_Outlined.png");
+        engine.AddFont("Assets/fonts/Font_Simple.png");
 
-         engine.GetGameStateManager().PushState<Mode1>();
+        engine.GetGameStateManager().PushState<Mode1>();
 
 #if !defined(__EMSCRIPTEN__)
         while (engine.HasGameEnded() == false)

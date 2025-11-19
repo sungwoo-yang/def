@@ -54,7 +54,6 @@ public:
 
     std::vector<std::pair<Math::vec2, Math::vec2>> GetSegments() const;
 
-    // ImGui 디버깅용
     bool         isShieldFrozen       = false;
     double       shieldFrozenTimer    = 0.0;
     const double shieldFreezeDuration = 3.0;

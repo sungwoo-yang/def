@@ -8,26 +8,19 @@
 #include <string>
 #include <vector>
 
-// 전방 선언
-class Shield; // 쉴드 컴포넌트
+class Shield; 
 
 namespace CS200
 {
     class IRenderer2D;
 }
 
-/**
- * \brief DemoAstar의 플랫폼 이동 기능과 Dash/Sprint를 담당하는 플레이어 클래스입니다.
- *
- * 쉴드 기능은 'Shield' 컴포넌트로 분리되었습니다.
- */
 class Player : public CS230::GameObject
 {
 public:
     Player(Math::vec2 start_pos);
     ~Player() override = default;
 
-    // GameObject 가상 함수 오버라이드
     void Update(double dt) override;
     void Draw(const Math::TransformationMatrix& camera_matrix) override;
 
@@ -71,10 +64,8 @@ public:
 private:
     void HandleInput(double dt);
 
-    // 컴포넌트
     Shield* shieldComponent;
 
-    // 물리 상태
     const double gravity;
     const double jumpStrength;
     const double baseSpeed;
@@ -84,8 +75,8 @@ private:
     Math::vec2 startPosition;
     Math::vec2 previousPosition;
 
-    double       jumpBufferTimer = 0.0; // 점프 키 선입력 기억 시간
-    double       coyoteTimer     = 0.0; // 땅에서 떨어져도 점프 가능한 시간
-    const double jumpBufferTime  = 0.1; // 0.1초간 선입력 허용
-    const double coyoteTime      = 0.1; // 0.1초간 코요테 타임 허용
+    double       jumpBufferTimer = 0.0;
+    double       coyoteTimer     = 0.0;
+    const double jumpBufferTime  = 0.1;
+    const double coyoteTime      = 0.1;
 };

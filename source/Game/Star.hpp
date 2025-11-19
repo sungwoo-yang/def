@@ -3,13 +3,13 @@
 #include "Engine/GameObject.hpp"
 #include "Engine/GameObjectTypes.hpp"
 
-class Player; // 전방 선언
+class Player;
 class TargetStar;
 
 enum class StarType
 {
-    Yellow, // 뱀 레이저 (가드 반사)
-    Red     // 즉발 레이저 (패링 반사)
+    Yellow,
+    Red
 };
 
 class Star : public CS230::GameObject
@@ -32,9 +32,9 @@ public:
 private:
     enum class State
     {
-        Idle,     // 감지 대기
-        Warning,  // 2초간 조준 (보조선)
-        Cooldown, // 발사 후 대기
+        Idle,
+        Warning,
+        Cooldown,
     };
 
     Player*                  player;
@@ -50,5 +50,5 @@ private:
     const double cooldownDuration = 5.0;
     const double parryWindowTime  = 0.5;
 
-    CS200::RGBA color = 0xFF0000FF; // 빨간색
+    CS200::RGBA color = 0xFF0000FF;
 };

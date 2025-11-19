@@ -1,15 +1,7 @@
-/**
- * \file
- * \author Sungwoo Yang
- * \date 2025 Fall
- * \par CS200 Computer Graphics I
- * \copyright DigiPen Institute of Technology
- */
-
 #pragma once
 #include "Component.hpp"
-#include "Rect.hpp"
 #include "Polygon.h"
+#include "Rect.hpp"
 
 namespace Math
 {
@@ -73,7 +65,6 @@ namespace CS230
     private:
         double      radius;
         GameObject* object;
-
     };
 
     class SATCollision : public Collision
@@ -87,12 +78,12 @@ namespace CS230
         }
 
         void         Draw(const Math::TransformationMatrix& display_matrix) override;
-        Polygon      WorldBoundary(); // <--- ¿ùµå ÁÂÇ¥ Æú¸®°ï ¹ÝÈ¯
+        Polygon      WorldBoundary();
         bool         IsCollidingWith(GameObject* other_object) override;
         virtual bool IsCollidingWith(Math::vec2 point) override;
 
     private:
-        Polygon     boundary; // ·ÎÄÃ ÁÂÇ¥ ´Ù°¢Çü
+        Polygon     boundary;
         GameObject* object;
     };
 }

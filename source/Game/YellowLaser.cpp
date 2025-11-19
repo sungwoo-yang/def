@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <cmath>
 
-// [필수] 거리 계산 함수
 static double DistToSegmentSquared(Math::vec2 p, Math::vec2 v, Math::vec2 w)
 {
     double l2 = (w - v).Dot(w - v);
@@ -104,7 +103,6 @@ void YellowLaser::Update(double dt)
         }
     }
 
-    // 타겟 충돌 체크
     for (TargetStar* target : targets)
     {
         if (target == nullptr)
@@ -143,7 +141,7 @@ void YellowLaser::Update(double dt)
     }
 }
 
-void YellowLaser::Draw(const Math::TransformationMatrix& /*camera_matrix*/)
+void YellowLaser::Draw([[maybe_unused]]const Math::TransformationMatrix& camera_matrix)
 {
     auto& renderer = Engine::GetRenderer2D();
     if (pathPoints.empty())

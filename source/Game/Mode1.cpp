@@ -36,7 +36,6 @@ void Mode1::Load()
     mapManager->LoadMap();
     AddGSComponent(mapManager);
 
-    // add player
     player = new Player({ 0.0, 800.0 });
 
     auto gom = GetGSComponent<CS230::GameObjectManager>();
@@ -45,10 +44,9 @@ void Mode1::Load()
     Math::ivec2 winSize = Engine::GetWindow().GetSize();
     camera->SetPosition(player->GetPosition() - Math::vec2{ winSize.x * 0.5, winSize.y * 0.5 });
 
-    // STAR
+    // Star
     std::vector<TargetStar*> targetStars;
 
-    // 1. 기존 (5500, 750)
     TargetStar* t1 = new TargetStar({ 5500.0, 750.0 });
     gom->Add(t1);
     targetStars.push_back(t1);
@@ -65,13 +63,13 @@ void Mode1::Load()
     gom->Add(t4);
     targetStars.push_back(t4);
 
-    TargetStar* t5 = new TargetStar({ 5500.0, 750.0 });
+    TargetStar* t5 = new TargetStar({ 6500.0, 750.0 });
     gom->Add(t5);
-    targetStars.push_back(t3);
+    targetStars.push_back(t5);
 
-    TargetStar* t6 = new TargetStar({ 6500.0, 750.0 });
+    TargetStar* t6 = new TargetStar({ 7500.0, 750.0 });
     gom->Add(t6);
-    targetStars.push_back(t4);
+    targetStars.push_back(t6);
 
     Star* yellowStar = new Star({ 5000.0, 750.0 }, player, targetStars, StarType::Yellow);
     gom->Add(yellowStar);
@@ -79,24 +77,21 @@ void Mode1::Load()
     Star* redStar = new Star({ 7000.0, 750.0 }, player, targetStars, StarType::Red);
     gom->Add(redStar);
 
-    // 요청하신 표지판들을 생성합니다. (Y 좌표는 플랫폼 높이에 맞게 조정해야 합니다)
-    Math::vec2 signSize = { 50.0, 25.0 }; // 표지판 기본 크기
+    Math::vec2 signSize = { 50.0, 25.0 };
 
-    // SVG 로딩이 실제로는 비어있으므로, y=300을 플랫폼 상단으로 가정하고 배치합니다.
     double platformY = 200;
-    double signY     = platformY + (signSize.y / 2.0); // 표지판이 플랫폼 위에 서 있도록 Y 위치 계산
+    double signY     = platformY + (signSize.y / 2.0);
 
     double platformY2 = 500.0;
     double signY2     = platformY2 + (signSize.y / 2.0);
 
-    gom->Add(new Sign({ 0.0, signY }, signSize, "A / D to Move"));
+    gom->Add(new Sign({ 0.0, signY }, signSize, "A/D to Move"));
     gom->Add(new Sign({ 200.0, signY }, signSize, "W or Space to Jump"));
-    // 모닥불 (Bonfire)
+
     Math::vec2 bonfireSize = { 25.0, 25.0 };
     double     bonfire1Y   = platformY2 + (bonfireSize.y / 2.0);
     gom->Add(new Bonfire({ 900.0, bonfire1Y }, bonfireSize));
 
-    // 모닥불 튜토리얼 표지판
     gom->Add(new Sign({ 800.0, signY2 }, signSize, "Press 'F' at Bonfire to Save"));
     gom->Add(new Sign({ 1900.0, signY2 }, signSize, "Press LShift to Dash"));
     gom->Add(new Sign({ 1100.0, signY }, signSize, "Press 'R' to Respawn"));
@@ -106,7 +101,7 @@ void Mode1::Load()
 
     double bonfire2Y = platformY + (bonfireSize.y / 2.0);
     gom->Add(new Bonfire({ 6000.0, bonfire2Y }, bonfireSize));
-    gom->Add(new Sign({ 5900.0, signY }, signSize, "Red Lasers Hurt! Parry with Timed Block!\n Be sure to Save at the Bonfire ahead!"));
+    gom->Add(new Sign({ 5900.0, signY }, signSize, "Red Lasers Hurt! Parry with Timed Block! Be sure to Save at the Bonfire ahead!"));
 }
 
 void Mode1::Update(double dt)
@@ -140,7 +135,6 @@ void Mode1::Draw()
     Engine::GetWindow().Clear(CS200::BLACK);
     Math::ivec2 display_size_int = Engine::GetWindow().GetSize();
 
-    // --- 1. 월드 좌표계 렌더링 (카메라 적용) ---
     Math::TransformationMatrix view_projection_matrix = CS200::build_ndc_matrix(display_size_int) * camera->GetMatrix();
     renderer.BeginScene(view_projection_matrix);
 
@@ -148,12 +142,9 @@ void Mode1::Draw()
 
     renderer.EndScene();
 
-    // --- 2. 스크린 좌표계 렌더링 (카메라 미적용) ---
-    // (DemoText.cpp와 동일한 방식)
     Math::TransformationMatrix screen_matrix = CS200::build_ndc_matrix(display_size_int);
     renderer.BeginScene(screen_matrix);
 
-    // WorldTextManager가 스크린 좌표계에서 텍스트를 그리도록 호출
     if (worldTextManager != nullptr)
     {
         worldTextManager->Draw();
@@ -164,7 +155,6 @@ void Mode1::Draw()
 
 void Mode1::DrawImGui()
 {
-    // 플레이어 디버그 창 (ImGui)
     if (player != nullptr && ImGui::Begin("Mode1 Player Debug"))
     {
         ImGui::Text("Player Position: (%.1f, %.1f)", player->GetPosition().x, player->GetPosition().y);

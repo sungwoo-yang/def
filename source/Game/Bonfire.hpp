@@ -3,7 +3,6 @@
 #include "Engine/GameObject.hpp"
 #include "Engine/GameObjectTypes.hpp"
 
-// CS230 네임스페이스를 사용하지 않습니다.
 class Bonfire : public CS230::GameObject
 {
 public:
@@ -21,7 +20,6 @@ public:
         return "Bonfire";
     }
 
-    // 플레이어가 상호작용 시 이 함수가 호출됩니다.
     void Interact(CS230::GameObject* interactor) override;
 
 private:
