@@ -2,6 +2,7 @@
 #include "Engine/Camera.hpp"
 #include "Engine/GameState.hpp"
 #include "Engine/Rect.hpp"
+#include "MiniMap.hpp"
 
 class Player;
 class WorldTextManager;
@@ -45,6 +46,7 @@ private:
     Star*              shooterStar;
     Star*              targetStar;
     YellowLaser*       yellowLaser;
+    MiniMap*           miniMap;
 
     Math::rect level1_boundary = {
         {  700.f,     0.f },

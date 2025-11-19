@@ -34,9 +34,20 @@ namespace CS230
         void Update([[maybe_unused]] double dt) override;
         Map* GetCurrentMap();
 
+        const std::vector<Polygon>& GetMiniMapPolygons() const
+        {
+            return miniMapPolygons;
+        }
+
+        void AddPolygon(const Polygon& poly)
+        {
+            miniMapPolygons.push_back(poly);
+        }
+
     private:
-        std::vector<Map*> maps;
-        int               currentMapIndex;
+        std::vector<Map*>    maps;
+        int                  currentMapIndex;
+        std::vector<Polygon> miniMapPolygons;
     };
 
     class Map : public Component

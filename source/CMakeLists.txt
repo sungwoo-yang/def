@@ -54,6 +54,7 @@ set(SOURCE_CODE
      
     Game/Bonfire.hpp Game/Bonfire.cpp
     Game/Door.hpp Game/Door.cpp
+    Game/MiniMap.hpp Game/MiniMap.cpp
     Game/Mode1.hpp Game/Mode1.cpp
     Game/Mode2.hpp Game/Mode2.cpp
     Game/Player.hpp Game/Player.cpp

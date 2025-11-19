@@ -34,6 +34,7 @@ namespace CS230
             delete map;
         }
         maps.clear();
+        miniMapPolygons.clear();
     }
 
     Map* MapManager::GetCurrentMap()
@@ -101,7 +102,7 @@ namespace CS230
             Engine::GetLogger().LogEvent(file_path + "");
             return;
         }
-        currentTagBuffer += line; 
+        currentTagBuffer += line;
 
         size_t tagEnd = currentTagBuffer.find('>');
         if (tagEnd == std::string::npos)
@@ -195,8 +196,8 @@ namespace CS230
                         vec.y += rotatetranslate.y;
                         double rotatedX = vec.x * std::cos(rotateAngle) - vec.y * std::sin(rotateAngle);
                         double rotatedY = vec.x * std::sin(rotateAngle) + vec.y * std::cos(rotateAngle);
-                        vec.x          = rotatedX;
-                        vec.y          = rotatedY;
+                        vec.x           = rotatedX;
+                        vec.y           = rotatedY;
                     }
                     if (IsTranslate)
                     {
@@ -216,6 +217,11 @@ namespace CS230
             poly.vertices    = positions;
             poly.vertexCount = static_cast<int>(positions.size());
 
+            if (auto mapManager = Engine::GetGameStateManager().GetGSComponent<MapManager>())
+            {
+                mapManager->AddPolygon(poly);
+            }
+
             Math::vec2 poly_center = poly.FindCenter();
 
             static bool first_path_logged = false;
@@ -234,7 +240,7 @@ namespace CS230
             MapElement* map_obj = new MapElement(poly_center, modified_poly);
 
             Engine::GetGameStateManager().GetGSComponent<GameObjectManager>()->Add(map_obj);
-    
+
 
             return;
         }
