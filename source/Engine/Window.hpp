@@ -54,8 +54,8 @@ namespace CS230
         std::function<void(SDL_Event)> eventCallback;
         bool                           is_closed = true;
 
-        static constexpr int         default_width  = 1600;
-        static constexpr int         default_height = 900;
+        static constexpr int         default_width  = 1280;
+        static constexpr int         default_height = 720;
         static constexpr CS200::RGBA default_background{ CS200::WHITE };
     };
 }

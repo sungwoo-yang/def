@@ -1,7 +1,8 @@
-#include "Mode1.h"
+#include "Mode1.hpp"
 #include "Bonfire.hpp"
 #include "CS200/IRenderer2D.hpp"
 #include "CS200/NDC.hpp"
+#include "Door.hpp"
 #include "Engine/Engine.hpp"
 #include "Engine/GameObjectManager.hpp"
 #include "Engine/Input.hpp"
@@ -77,31 +78,56 @@ void Mode1::Load()
     Star* redStar = new Star({ 7000.0, 750.0 }, player, targetStars, StarType::Red);
     gom->Add(redStar);
 
+    double platformY  = 200;
+    double platformY2 = 500.0;
+
+    // Sign
     Math::vec2 signSize = { 50.0, 25.0 };
 
-    double platformY = 200;
-    double signY     = platformY + (signSize.y / 2.0);
+    double sign1_y = platformY + (signSize.y / 2.0);
+    double sign2_y = platformY2 + (signSize.y / 2.0);
 
-    double platformY2 = 500.0;
-    double signY2     = platformY2 + (signSize.y / 2.0);
+    double sign1_x  = 0.0;
+    double sign2_x  = 200.0;
+    double sign3_x  = 800.0;
+    double sign4_x  = 1100.0;
+    double sign5_x  = 1900.0;
+    double sign6_x  = 2700.0;
+    double sign7_x  = 4500.0;
+    double sign8_x  = 5000.0;
+    double sign9_x  = 5900.0;
+    double sign10_x = 7900.0;
 
-    gom->Add(new Sign({ 0.0, signY }, signSize, "A/D to Move"));
-    gom->Add(new Sign({ 200.0, signY }, signSize, "W or Space to Jump"));
+    gom->Add(new Sign({ sign1_x, sign1_y }, signSize, "A/D to Move"));
+    gom->Add(new Sign({ sign2_x, sign1_y }, signSize, "W or Space to Jump"));
+    gom->Add(new Sign({ sign3_x, sign2_y }, signSize, "Press 'F' at Bonfire to Save"));
+    gom->Add(new Sign({ sign4_x, sign1_y }, signSize, "Press 'R' to Respawn"));
+    gom->Add(new Sign({ sign5_x, sign2_y }, signSize, "Press LShift to Dash"));
+    gom->Add(new Sign({ sign6_x, sign1_y }, signSize, "Hold 'LShift' to Sprint"));
+    gom->Add(new Sign({ sign7_x, sign1_y }, signSize, "Hold RMB: Shield (Reflects Light, Slows Move)"));
+    gom->Add(new Sign({ sign8_x, sign1_y }, signSize, "Reflect Light to Hit the Star!"));
+    gom->Add(new Sign({ sign9_x, sign1_y }, signSize, "Red Lasers Hurt! Parry with Timed Block! Be sure to Save at the Bonfire ahead!"));
+    gom->Add(new Sign({ sign10_x, sign1_y }, signSize, "Door"));
 
+    // BonFire
     Math::vec2 bonfireSize = { 25.0, 25.0 };
-    double     bonfire1Y   = platformY2 + (bonfireSize.y / 2.0);
-    gom->Add(new Bonfire({ 900.0, bonfire1Y }, bonfireSize));
 
-    gom->Add(new Sign({ 800.0, signY2 }, signSize, "Press 'F' at Bonfire to Save"));
-    gom->Add(new Sign({ 1900.0, signY2 }, signSize, "Press LShift to Dash"));
-    gom->Add(new Sign({ 1100.0, signY }, signSize, "Press 'R' to Respawn"));
-    gom->Add(new Sign({ 2700.0, signY }, signSize, "Hold 'LShift' to Sprint"));
-    gom->Add(new Sign({ 4500.0, signY }, signSize, "Hold RMB: Shield (Reflects Light, Slows Move)"));
-    gom->Add(new Sign({ 5000.0, signY }, signSize, "Reflect Light to Hit the Star!"));
+    double bonfire1_y = platformY + (bonfireSize.y / 2.0);
+    double bonfire2_y = platformY2 + (bonfireSize.y / 2.0);
 
-    double bonfire2Y = platformY + (bonfireSize.y / 2.0);
-    gom->Add(new Bonfire({ 6000.0, bonfire2Y }, bonfireSize));
-    gom->Add(new Sign({ 5900.0, signY }, signSize, "Red Lasers Hurt! Parry with Timed Block! Be sure to Save at the Bonfire ahead!"));
+    double bonfire1_x = 900.0;
+    double bonfire2_x = 6000.0;
+    double bonfire3_x = 7800.0;
+
+    gom->Add(new Bonfire({ bonfire1_x, bonfire2_y }, bonfireSize));
+    gom->Add(new Bonfire({ bonfire2_x, bonfire1_y }, bonfireSize));
+    gom->Add(new Bonfire({ bonfire3_x, bonfire1_y }, bonfireSize));
+
+    // Door
+    Math::vec2 doorSize = { 80, 120 };
+    double     doorY    = platformY + (doorSize.y / 2.0);
+
+    gom->Add(new Door({ 8000.0, doorY }, doorSize));
 }
 
 void Mode1::Update(double dt)
@@ -125,7 +151,7 @@ void Mode1::Update(double dt)
 
     if (Engine::GetInput().KeyJustPressed(CS230::Input::Keys::P))
     {
-        player->SetPosition({ 5000, 300 });
+        player->SetPosition({ 7000, 300 });
     }
 }
 

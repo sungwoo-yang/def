@@ -15,6 +15,12 @@ namespace CS230
 {
     void GameStateManager::PopState()
     {
+        if (is_updating)
+        {
+            pending_actions.push_back([this]() { PopState(); });
+            return;
+        }
+
         using namespace std::literals;
         auto* const state = mGameStateStack.back().get();
         mToClear.push_back(std::move(mGameStateStack.back()));
@@ -25,12 +31,19 @@ namespace CS230
 
     void GameStateManager::Update(double dt)
     {
+        for (const auto& action : pending_actions)
+        {
+            action();
+        }
+        pending_actions.clear();
+
         mToClear.clear();
 
         if (mGameStateStack.empty())
         {
             return;
         }
+        is_updating = true;
 
         mGameStateStack.back()->Update(dt);
 
@@ -39,6 +52,9 @@ namespace CS230
         {
             gom->CollisionTest();
         }
+
+
+        is_updating = false;
     }
 
     void GameStateManager::Draw()
@@ -56,6 +72,12 @@ namespace CS230
 
     void GameStateManager::Clear()
     {
+        if (is_updating)
+        {
+            pending_actions.push_back([this]() { Clear(); });
+            return;
+        }
+
         while (!mGameStateStack.empty())
             PopState();
         mToClear.clear();

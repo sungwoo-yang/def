@@ -192,7 +192,7 @@ void Player::HandleInput(double dt)
             isJumping = true;
 
             jumpBufferTimer = 0.0;
-            coyoteTimer     = 0.0; 
+            coyoteTimer     = 0.0;
 
             Engine::GetLogger().LogEvent("Event: Player Jump (Buffered/Coyote)");
         }
@@ -210,6 +210,10 @@ bool Player::CanCollideWith(GameObjectTypes other_object_type)
         return true;
     }
     else if (other_object_type == GameObjectTypes::Bonfire)
+    {
+        return true;
+    }
+    else if (other_object_type == GameObjectTypes::Door)
     {
         return true;
     }
@@ -249,16 +253,16 @@ void Player::ResolveCollision(GameObject* other_object)
         bool was_left  = prev_right <= platform_left;
         bool was_right = prev_left >= platform_right;
 
-        double overlap_bottom = my_box.Top() - other_box.Bottom(); 
-        double overlap_top    = other_box.Top() - my_box.Bottom(); 
-        double overlap_left   = my_box.Right() - other_box.Left(); 
-        double overlap_right  = other_box.Right() - my_box.Left(); 
+        double overlap_bottom = my_box.Top() - other_box.Bottom();
+        double overlap_top    = other_box.Top() - my_box.Bottom();
+        double overlap_left   = my_box.Right() - other_box.Left();
+        double overlap_right  = other_box.Right() - my_box.Left();
 
         bool horizontal_overlap = my_box.Right() > other_box.Left() && my_box.Left() < other_box.Right();
         bool vertical_overlap   = my_box.Top() > other_box.Bottom() && my_box.Bottom() < other_box.Top();
 
         if (!horizontal_overlap || !vertical_overlap)
-            return; 
+            return;
 
 
         if (velocityY <= 0 && was_above && horizontal_overlap)
@@ -286,7 +290,6 @@ void Player::ResolveCollision(GameObject* other_object)
         }
         else
         {
-
             double min_overlap = overlap_bottom;
             int    axis        = 0;
 
@@ -321,16 +324,12 @@ void Player::ResolveCollision(GameObject* other_object)
 
                     coyoteTimer = coyoteTime;
                     break;
-                case 2:
-                    SetPosition({ platform_left - (PLAYER_COLLISION_SIZE.x / 2.0), GetPosition().y });
-                    break;
-                case 3:
-                    SetPosition({ platform_right + (PLAYER_COLLISION_SIZE.x / 2.0), GetPosition().y });
-                    break;
+                case 2: SetPosition({ platform_left - (PLAYER_COLLISION_SIZE.x / 2.0), GetPosition().y }); break;
+                case 3: SetPosition({ platform_right + (PLAYER_COLLISION_SIZE.x / 2.0), GetPosition().y }); break;
             }
         }
     }
-    else if (other_object->Type() == GameObjectTypes::Sign || other_object->Type() == GameObjectTypes::Bonfire)
+    else if (other_object->Type() == GameObjectTypes::Sign || other_object->Type() == GameObjectTypes::Bonfire || other_object->Type() == GameObjectTypes::Door)
     {
         interactionTarget = other_object;
 

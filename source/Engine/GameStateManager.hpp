@@ -11,6 +11,7 @@
 #include "Engine.hpp"
 #include "GameState.hpp"
 #include "Logger.hpp"
+#include <functional>
 #include <memory>
 #include <vector>
 
@@ -52,11 +53,20 @@ namespace CS230
     private:
         std::vector<std::unique_ptr<GameState>> mGameStateStack;
         std::vector<std::unique_ptr<GameState>> mToClear;
+
+        bool                               is_updating = false;
+        std::vector<std::function<void()>> pending_actions;
     };
 
     template <typename STATE>
     void GameStateManager::PushState()
     {
+        if (is_updating)
+        {
+            pending_actions.push_back([this]() { PushState<STATE>(); });
+            return;
+        }
+
         using namespace std::literals;
         mGameStateStack.push_back(std::make_unique<STATE>());
         const auto& state = mGameStateStack.back();

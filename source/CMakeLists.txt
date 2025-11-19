@@ -53,11 +53,14 @@ set(SOURCE_CODE
     Engine/Window.hpp Engine/Window.cpp
      
     Game/Bonfire.hpp Game/Bonfire.cpp
-    Game/RedLaser.hpp Game/RedLaser.cpp
-    Game/Mode1.h Game/Mode1.cpp
+    Game/Door.hpp Game/Door.cpp
+    Game/Mode1.hpp Game/Mode1.cpp
+    Game/Mode2.hpp Game/Mode2.cpp
     Game/Player.hpp Game/Player.cpp
+    Game/RedLaser.hpp Game/RedLaser.cpp
     Game/Shield.hpp Game/Shield.cpp
     Game/Sign.hpp Game/Sign.cpp
+    Game/Splash.hpp Game/Splash.cpp
     Game/Star.hpp Game/Star.cpp
     Game/TargetStar.hpp Game/TargetStar.cpp
     Game/WorldTextManager.hpp Game/WorldTextManager.cpp

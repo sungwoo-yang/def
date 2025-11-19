@@ -17,5 +17,6 @@ enum class GameObjectTypes
     Sign,
     Bonfire,
     Particle,
+    Door,
     Count
 };
