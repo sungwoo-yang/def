@@ -27,6 +27,7 @@ namespace CS230
         void UpdateAll(double dt);
         void DrawAll(Math::TransformationMatrix camera_matrix);
         void CollisionTest();
+        void DrawAllImGui();
 
     private:
         std::list<GameObject*> objects;

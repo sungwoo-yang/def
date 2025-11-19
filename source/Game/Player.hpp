@@ -23,7 +23,8 @@ public:
 
     void Update(double dt) override;
     void Draw(const Math::TransformationMatrix& camera_matrix) override;
-
+    void DrawImGui() override;
+    
     const Math::vec2& GetPosition() const
     {
         return GameObject::GetPosition();

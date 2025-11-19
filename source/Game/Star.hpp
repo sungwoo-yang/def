@@ -18,6 +18,7 @@ public:
     Star(Math::vec2 position, Player* targetPlayer, const std::vector<TargetStar*>& destStars, StarType type);
     void Update(double dt) override;
     void Draw([[maybe_unused]] const Math::TransformationMatrix& camera_matrix) override;
+    void DrawImGui() override;
 
     GameObjectTypes Type() override
     {

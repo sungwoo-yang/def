@@ -1,6 +1,7 @@
 #pragma once
 #include "Engine/Camera.hpp"
 #include "Engine/GameState.hpp"
+#include "Engine/Rect.hpp"
 
 class Player;
 class WorldTextManager;
@@ -27,6 +28,16 @@ public:
     }
 
 private:
+    void InitGame();
+
+    enum class State
+    {
+        Loading,
+        Playing
+    };
+
+    State currentState = State::Loading;
+
     CS230::Camera*     camera;
     Player*            player;
     CS230::MapManager* mapManager;

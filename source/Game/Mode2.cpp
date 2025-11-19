@@ -12,6 +12,7 @@
 #include "Game/Sign.hpp"
 #include "Player.hpp"
 #include "WorldTextManager.hpp"
+#include <imgui.h>
 
 void Mode2::Load()
 {
@@ -51,7 +52,7 @@ void Mode2::InitGame()
     camera->SetPosition(player->GetPosition() - Math::vec2{ winSize.x * 0.5, winSize.y * 0.5 });
 
     auto gom = GetGSComponent<CS230::GameObjectManager>();
-    gom->Add(new Sign({ 350.0, 780.0 }, { 50.0, 25.0 }, "BOSS STAGE START!"));
+    gom->Add(new Sign({ 350.0, 200.0 }, { 50.0, 25.0 }, "BOSS STAGE START!"));
 }
 
 void Mode2::Update(double dt)
@@ -76,7 +77,7 @@ void Mode2::Update(double dt)
     {
         Math::vec2 winSize   = static_cast<Math::vec2>(Engine::GetWindow().GetSize());
         Math::vec2 targetPos = player->GetPosition() - Math::vec2{ winSize.x * 0.5, winSize.y * 0.3 };
-        camera->Update(targetPos);
+        camera->SetPosition(targetPos);
     }
 }
 
@@ -124,6 +125,26 @@ void Mode2::Draw()
 
 void Mode2::DrawImGui()
 {
+#ifdef DEVELOPER_VERSION
+    ImGui::Begin("Mode2 (Boss) Debug");
+
+    ImGui::Text("FPS: %d", Engine::GetWindowEnvironment().FPS);
+    if (camera)
+    {
+        Math::vec2 camPos = camera->GetPosition();
+        ImGui::Text("Camera Pos: (%.1f, %.1f)", camPos.x, camPos.y);
+    }
+
+    ImGui::Separator();
+
+    auto gom = GetGSComponent<CS230::GameObjectManager>();
+    if (gom)
+    {
+        gom->DrawAllImGui();
+    }
+
+    ImGui::End();
+#endif
 }
 
 void Mode2::Unload()

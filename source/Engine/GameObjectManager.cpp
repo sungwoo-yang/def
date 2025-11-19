@@ -73,4 +73,12 @@ namespace CS230
             }
         }
     }
+
+    void GameObjectManager::DrawAllImGui()
+    {
+        for (auto object : objects)
+        {
+            object->DrawImGui();
+        }
+    }
 }

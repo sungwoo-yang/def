@@ -33,7 +33,7 @@ public:
     void Update(double dt) override;
     void HandleInput(double dt);
     void Draw(CS200::IRenderer2D& renderer, const Math::TransformationMatrix& camera_matrix) const;
-
+    void DrawImGui();
     void UpdatePosition();
     void HandleHit(bool parrySuccess);
 

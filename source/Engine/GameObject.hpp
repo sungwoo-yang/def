@@ -38,6 +38,7 @@ namespace CS230
         virtual void Draw(const Math::TransformationMatrix& camera_matrix);
         virtual void ResolveCollision([[maybe_unused]] GameObject* other_object) { };
         virtual void Interact([[maybe_unused]] GameObject* other_object) { };
+        virtual void DrawImGui() { };
 
         const Math::TransformationMatrix& GetMatrix();
         const Math::vec2&                 GetPosition() const;

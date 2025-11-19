@@ -9,6 +9,7 @@
 #include "Player.hpp"
 #include "RedLaser.hpp"
 #include "YellowLaser.hpp"
+#include <imgui.h>
 
 Star::Star(Math::vec2 position, Player* targetPlayer, const std::vector<TargetStar*>& destStars, StarType type)
     : CS230::GameObject(position), player(targetPlayer), targets(destStars), starType(type), currentState(State::Idle), timer(0.0)
@@ -130,4 +131,33 @@ void Star::Draw([[maybe_unused]] const Math::TransformationMatrix& camera_matrix
             renderer.DrawLine(seg.first, seg.second, lineColor, 2.0);
         }
     }
+}
+
+void Star::DrawImGui()
+{
+    ImGui::PushID(this);
+    if (ImGui::TreeNode("Star (Enemy)"))
+    {
+        const char* stateName = "Unknown";
+        switch (currentState)
+        {
+            case State::Idle: stateName = "Idle"; break;
+            case State::Warning: stateName = "Warning"; break;
+            case State::Cooldown: stateName = "Cooldown"; break;
+        }
+        ImGui::Text("Current State: %s", stateName);
+        ImGui::Text("State Timer: %.2f", timer);
+
+        ImGui::Text("Type: %s", starType == StarType::Yellow ? "Yellow" : "Red");
+
+        Math::vec2 pos  = GetPosition();
+        float      p[2] = { static_cast<float>(pos.x), static_cast<float>(pos.y) };
+        if (ImGui::DragFloat2("Position", p))
+        {
+            SetPosition({ p[0], p[1] });
+        }
+
+        ImGui::TreePop();
+    }
+    ImGui::PopID();
 }

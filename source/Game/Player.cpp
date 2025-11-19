@@ -10,6 +10,7 @@
 #include "WorldTextManager.hpp"
 #include <algorithm>
 #include <cmath>
+#include <imgui.h>
 #include <limits>
 
 namespace
@@ -365,4 +366,51 @@ void Player::Draw(const Math::TransformationMatrix& camera_matrix)
     }
 
     CS230::GameObject::Draw(camera_matrix);
+}
+
+void Player::DrawImGui()
+{
+    ImGui::PushID(this);
+    if (ImGui::TreeNode("Player"))
+    {
+        // 위치 및 속도 조작 (Double -> Float 변환 필요)
+        Math::vec2 pos  = GetPosition();
+        float      p[2] = { static_cast<float>(pos.x), static_cast<float>(pos.y) };
+        if (ImGui::DragFloat2("Position", p))
+        {
+            SetPosition({ p[0], p[1] });
+        }
+
+        Math::vec2 vel  = GetVelocity();
+        float      v[2] = { static_cast<float>(vel.x), static_cast<float>(vel.y) };
+        if (ImGui::DragFloat2("Velocity", v))
+        {
+            SetVelocity({ v[0], v[1] });
+            velocityY = v[1]; // Player 내부 변수도 업데이트
+        }
+
+        ImGui::Separator();
+        ImGui::Text("Movement State:");
+        ImGui::Checkbox("Is Jumping", &isJumping);
+        ImGui::Checkbox("Is Sprinting", &isSprinting);
+        ImGui::Checkbox("Face Right", &faceRight);
+        ImGui::Text("Shift Hold Time: %.2f", shiftHoldTimer);
+        ImGui::Text("Coyote Timer: %.2f", coyoteTimer);
+        ImGui::Text("Jump Buffer: %.2f", jumpBufferTimer);
+
+        ImGui::Separator();
+        ImGui::Text("Dash State:");
+        ImGui::Checkbox("Is Dashing", &dashComponent.isDashing);
+        ImGui::Text("Dash Timer: %.2f", dashComponent.dashTimer);
+        ImGui::Text("Dash Cooldown: %.2f", dashComponent.dashCooldownTimer);
+
+        ImGui::Separator();
+        if (shieldComponent)
+        {
+            shieldComponent->DrawImGui();
+        }
+
+        ImGui::TreePop();
+    }
+    ImGui::PopID();
 }

@@ -10,6 +10,7 @@
 #include "Engine/Window.hpp"
 #include <algorithm>
 #include <cmath>
+#include <imgui.h>
 #include <stdexcept>
 
 namespace
@@ -38,7 +39,8 @@ namespace
         const auto easing = std::min(delta_time * weight, static_cast<FLOAT>(1.0));
         add_assign(current, multiply(easing, subtract(target, current)));
     }
-} 
+}
+
 Shield::Shield(CS230::GameObject* owner) : owner(owner), shieldHitTimer(shieldColorRecoveryTime)
 {
     if (owner == nullptr)
@@ -49,7 +51,7 @@ Shield::Shield(CS230::GameObject* owner) : owner(owner), shieldHitTimer(shieldCo
     currentShieldColor = CS200::unpack_color(CS200::CYAN);
     targetShieldColor  = CS200::unpack_color(CS200::CYAN);
 
-    UpdatePosition(); 
+    UpdatePosition();
 }
 
 void Shield::HandleInput([[maybe_unused]] double dt)
@@ -94,7 +96,7 @@ bool Shield::ConsumeParryState()
 {
     if (isParrying)
     {
-        isParrying = false; 
+        isParrying = false;
         return true;
     }
     return false;
@@ -209,4 +211,45 @@ void Shield::UpdateShieldColor(double dt)
     }
     ease_color_to_target(currentShieldColor, targetShieldColor, dt, 5.0);
     shieldColor = CS200::pack_color(currentShieldColor);
+}
+
+void Shield::DrawImGui()
+{
+    if (ImGui::TreeNode("Shield Component"))
+    {
+        ImGui::Text("State Info:");
+        bool isGuardDown = Engine::GetInput().MouseButtonDown(CS230::Input::MouseButton::Right);
+        ImGui::Checkbox("Is Guard Up", &isGuardDown);
+        ImGui::Checkbox("Is Frozen", &isShieldFrozen);
+        ImGui::Checkbox("Parry Window Active", &parryWindowActive);
+        ImGui::Checkbox("Is Parrying", &isParrying);
+
+        ImGui::Separator();
+        ImGui::Text("Timers:");
+        ImGui::Text("Frozen Timer: %.2f / %.2f", static_cast<float>(shieldFrozenTimer), static_cast<float>(shieldFreezeDuration));
+        ImGui::Text("Hit Timer: %.2f / %.2f", static_cast<float>(shieldHitTimer), static_cast<float>(shieldColorRecoveryTime));
+
+        ImGui::Separator();
+        ImGui::Text("Transform:");
+        float angleDeg = static_cast<float>(shieldAngle * 180.0 / PI);
+        ImGui::Text("Angle: %.1f deg", angleDeg);
+
+        float len = static_cast<float>(shieldLength);
+        if (ImGui::DragFloat("Length", &len, 1.0f, 10.0f, 500.0f))
+        {
+            shieldLength = static_cast<double>(len);
+        }
+
+        float rad = static_cast<float>(orbitRadius);
+        if (ImGui::DragFloat("Orbit Radius", &rad, 1.0f, 10.0f, 300.0f))
+        {
+            orbitRadius = static_cast<double>(rad);
+        }
+
+        ImGui::Separator();
+        ImGui::Text("Color:");
+        ImGui::ColorEdit4("Current Color", currentShieldColor.data());
+
+        ImGui::TreePop();
+    }
 }
