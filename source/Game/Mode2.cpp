@@ -19,7 +19,10 @@ void Mode2::Load()
     currentState = State::Loading;
 
     AddGSComponent(new CS230::GameObjectManager());
+#ifdef DEVERLOPER_VERSION
     AddGSComponent(new CS230::ShowCollision());
+#endif
+
 
     camera = new CS230::Camera(
         Math::rect{

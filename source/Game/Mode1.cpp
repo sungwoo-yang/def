@@ -11,25 +11,37 @@
 #include "Engine/MapManager.h"
 #include "Engine/ShowCollision.hpp"
 #include "Engine/Window.hpp"
+#include "MiniMap.hpp"
 #include "Player.hpp"
 #include "Sign.hpp"
 #include "Star.hpp"
 #include "TargetStar.hpp"
 #include "WorldTextManager.hpp"
+#include <algorithm>
 #include <imgui.h>
+#include <string>
 
 void Mode1::Load()
 {
     currentState = State::Loading;
 
     AddGSComponent(new CS230::GameObjectManager());
+#ifdef DEVELOPER_VERSION
     AddGSComponent(new CS230::ShowCollision());
-
+#endif
     camera = new CS230::Camera(
         Math::rect{
             {   0,   0 },
             { 800, 600 }
     });
+
+    Math::ivec2 winSize = Engine::GetWindow().GetSize();
+    camera->SetLimit(
+        Math::irect{
+            {              static_cast<int>(level1_boundary.Left()), -5000 },
+            { static_cast<int>(level1_boundary.Right()) - winSize.x,  5000 }
+    });
+
     AddGSComponent(camera);
 
     mapManager = new CS230::MapManager();
@@ -38,11 +50,6 @@ void Mode1::Load()
     AddGSComponent(mapManager);
 
     miniMap = new MiniMap();
-
-    miniMap->AttachPlayer(player);
-    miniMap->AttachCamera(camera);
-    miniMap->AttachMapManager(mapManager);
-
     miniMap->SetWorldBounds(level1_boundary);
 }
 
@@ -57,40 +64,63 @@ void Mode1::InitGame()
     player = new Player({ 0.0, 800.0 });
     gom->Add(player);
 
+    if (miniMap)
+    {
+        miniMap->AttachPlayer(player);
+        miniMap->AttachCamera(camera);
+        miniMap->AttachMapManager(mapManager);
+    }
+
     Math::ivec2 winSize = Engine::GetWindow().GetSize();
     camera->SetPosition(player->GetPosition() - Math::vec2{ winSize.x * 0.5, winSize.y * 0.5 });
 
-    // Star
-    std::vector<TargetStar*> targetStars;
+    targetStars.clear();
 
-    TargetStar* t1 = new TargetStar({ 5500.0, 750.0 });
+    // Star
+    double t1_x = 4500.0;
+    double t2_x = 4800.0;
+    double t3_x = 5200.0;
+    double t4_x = 5500.0;
+    double t5_x = 6500.0;
+    double t6_x = 7500.0;
+
+    double t1_y = 750.0;
+    double t2_y = 1000.0;
+
+    TargetStar* t1 = new TargetStar({ t1_x, t1_y });
     gom->Add(t1);
     targetStars.push_back(t1);
 
-    TargetStar* t2 = new TargetStar({ 4500.0, 750.0 });
+    TargetStar* t2 = new TargetStar({ t2_x, t2_y });
     gom->Add(t2);
     targetStars.push_back(t2);
 
-    TargetStar* t3 = new TargetStar({ 4800.0, 1000.0 });
+    TargetStar* t3 = new TargetStar({ t3_x, t2_y });
     gom->Add(t3);
     targetStars.push_back(t3);
 
-    TargetStar* t4 = new TargetStar({ 5200.0, 1000.0 });
+    TargetStar* t4 = new TargetStar({ t4_x, t1_y });
     gom->Add(t4);
     targetStars.push_back(t4);
 
-    TargetStar* t5 = new TargetStar({ 6500.0, 750.0 });
+    TargetStar* t5 = new TargetStar({ t5_x, t1_y });
     gom->Add(t5);
     targetStars.push_back(t5);
 
-    TargetStar* t6 = new TargetStar({ 7500.0, 750.0 });
+    TargetStar* t6 = new TargetStar({ t6_x, t1_y });
     gom->Add(t6);
     targetStars.push_back(t6);
 
-    Star* yellowStar = new Star({ 5000.0, 750.0 }, player, targetStars, StarType::Yellow);
+    double y1_x = 5000.0;
+    double y1_y = 750.0;
+
+    double r1_x = 7000.0;
+    double r1_y = 750.0;
+
+    Star* yellowStar = new Star({ y1_x, y1_y }, player, targetStars, StarType::Yellow);
     gom->Add(yellowStar);
 
-    Star* redStar = new Star({ 7000.0, 750.0 }, player, targetStars, StarType::Red);
+    Star* redStar = new Star({ r1_x, r1_y }, player, targetStars, StarType::Red);
     gom->Add(redStar);
 
     double platformY  = 200;
@@ -140,9 +170,10 @@ void Mode1::InitGame()
 
     // Door
     Math::vec2 doorSize = { 80, 120 };
-    double     doorY    = platformY + (doorSize.y / 2.0);
+    double     door_x   = 8000.0;
+    double     door_y   = platformY + (doorSize.y / 2.0);
 
-    gom->Add(new Door({ 8000.0, doorY }, doorSize));
+    gom->Add(new Door({ door_x, door_y }, doorSize));
 }
 
 void Mode1::Update(double dt)
@@ -160,6 +191,14 @@ void Mode1::Update(double dt)
         return;
     }
 
+    if (Engine::GetInput().KeyJustPressed(CS230::Input::Keys::M))
+    {
+        if (miniMap)
+        {
+            miniMap->ToggleMode();
+        }
+    }
+
     GetGSComponent<CS230::GameObjectManager>()->UpdateAll(dt);
     GetGSComponent<CS230::GameObjectManager>()->CollisionTest();
 
@@ -172,6 +211,16 @@ void Mode1::Update(double dt)
     {
         Math::vec2 winSize   = static_cast<Math::vec2>(Engine::GetWindow().GetSize());
         Math::vec2 targetPos = player->GetPosition() - Math::vec2{ winSize.x * 0.5, winSize.y * 0.3 };
+
+        double minX = level1_boundary.Left();
+        double maxX = level1_boundary.Right() - winSize.x;
+
+        if (targetPos.x < minX)
+            targetPos.x = minX;
+
+        if (targetPos.x > maxX)
+            targetPos.x = maxX;
+
         camera->SetPosition(targetPos);
     }
 
@@ -224,6 +273,36 @@ void Mode1::Draw()
         worldTextManager->Draw();
     }
 
+    if (!targetStars.empty())
+    {
+        int hitCount = 0;
+        for (auto* star : targetStars)
+        {
+            if (star && star->IsHit())
+            {
+                hitCount++;
+            }
+        }
+
+        std::string  countText = "Stars: " + std::to_string(hitCount) + " / " + std::to_string(targetStars.size());
+        CS230::Font& font      = Engine::GetFont(0);
+
+        CS200::RGBA textColor = (hitCount == targetStars.size()) ? 0x00FF00FF : CS200::WHITE;
+
+        auto textTex = font.PrintToTexture(countText, textColor);
+        if (textTex)
+        {
+            Math::vec2  scale     = { 0.8, 0.8 };
+            Math::ivec2 texSize   = textTex->GetSize();
+            double      textWidth = texSize.x * scale.x;
+
+            Math::vec2 drawPos = { static_cast<double>(display_size_int.x) - textWidth - 20.0, static_cast<double>(display_size_int.y) - 50.0 };
+
+            Math::TransformationMatrix transform = Math::TranslationMatrix(drawPos) * Math::ScaleMatrix(scale);
+            textTex->Draw(transform);
+        }
+    }
+
     renderer.EndScene();
 }
 
@@ -250,6 +329,9 @@ void Mode1::DrawImGui()
             gom->DrawAllImGui();
         }
     }
+    ImGui::End();
+#endif
+    ImGui::Begin("Mode1 Release");
 
     if (miniMap)
     {
@@ -257,7 +339,6 @@ void Mode1::DrawImGui()
     }
 
     ImGui::End();
-#endif
 }
 
 void Mode1::Unload()
@@ -266,6 +347,7 @@ void Mode1::Unload()
     player           = nullptr;
     mapManager       = nullptr;
     worldTextManager = nullptr;
+    targetStars.clear();
 
     delete miniMap;
     miniMap = nullptr;

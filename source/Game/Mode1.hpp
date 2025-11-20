@@ -8,6 +8,7 @@ class Player;
 class WorldTextManager;
 class Star;
 class YellowLaser;
+class TargetStar;
 
 namespace CS230
 {
@@ -48,8 +49,10 @@ private:
     YellowLaser*       yellowLaser;
     MiniMap*           miniMap;
 
+    std::vector<TargetStar*> targetStars;
+    
     Math::rect level1_boundary = {
-        {  700.f,     0.f },
-        { 4500.f, -4500.f }
+        {  -500.f,  2000.f },
+        { 10000.f, -2000.f }
     };
 };

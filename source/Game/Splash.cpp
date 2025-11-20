@@ -7,7 +7,7 @@
 #include "Engine/Input.hpp"
 #include "Engine/Texture.hpp"
 #include "Engine/Window.hpp"
-#include "Mode1.hpp"
+#include "MainMenu.hpp"
 
 void Splash::Load()
 {
@@ -22,7 +22,7 @@ void Splash::Update(double dt)
     auto& input = Engine::GetInput();
     if (timer <= 0.0 || input.KeyJustPressed(CS230::Input::Keys::Space) || input.KeyJustPressed(CS230::Input::Keys::Enter))
     {
-        Engine::GetGameStateManager().PushState<Mode1>();
+        Engine::GetGameStateManager().PushState<MainMenu>();
     }
 }
 

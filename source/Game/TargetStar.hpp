@@ -11,10 +11,8 @@ public:
     void Draw([[maybe_unused]] const Math::TransformationMatrix& camera_matrix) override;
     void OnHit();
 
-    double GetRadius() const
-    {
-        return radius;
-    }
+    bool   IsHit() const;
+    double GetRadius() const;
 
     GameObjectTypes Type() override
     {
@@ -29,4 +27,5 @@ public:
 private:
     CS200::RGBA color;
     double      radius = 40.0;
+    bool        isHit  = false;
 };
