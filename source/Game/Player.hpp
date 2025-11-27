@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-class Shield; 
+class Shield;
 
 namespace CS200
 {
@@ -24,7 +24,7 @@ public:
     void Update(double dt) override;
     void Draw(const Math::TransformationMatrix& camera_matrix) override;
     void DrawImGui() override;
-    
+
     const Math::vec2& GetPosition() const
     {
         return GameObject::GetPosition();
@@ -52,8 +52,6 @@ public:
     }
 
     CS230::DashComponent  dashComponent;
-    bool                  isSprinting          = false;
-    double                shiftHoldTimer       = 0.0;
     bool                  isJumping            = false;
     std::optional<size_t> currentPlatformIndex = std::nullopt;
     double                velocityY            = 0.0;
@@ -70,8 +68,10 @@ private:
     const double gravity;
     const double jumpStrength;
     const double baseSpeed;
-    const double sprintSpeedMultiplier;
-    const double sprintActivationTime;
+
+    double       currentSpeedMultiplier = 1.0;
+    const double shieldSlowdownRate     = 4.0;
+    const double minShieldSpeedMult     = 0.3;
 
     Math::vec2 startPosition;
     Math::vec2 previousPosition;

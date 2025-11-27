@@ -23,9 +23,8 @@ namespace
 }
 
 Player::Player(Math::vec2 start_pos)
-    : CS230::GameObject(start_pos), startPosition(start_pos), previousPosition(start_pos), shieldComponent(nullptr), isSprinting(false), shiftHoldTimer(0.0), isJumping(true),
-      currentPlatformIndex(std::nullopt), velocityY(0.0), faceRight(true), interactionTarget(nullptr), isInteracting(false), gravity(1500.0), jumpStrength(700.0), baseSpeed(300.0),
-      sprintSpeedMultiplier(1.8), sprintActivationTime(0.5)
+    : CS230::GameObject(start_pos), startPosition(start_pos), previousPosition(start_pos), shieldComponent(nullptr), isJumping(true), currentPlatformIndex(std::nullopt), velocityY(0.0),
+      faceRight(true), interactionTarget(nullptr), isInteracting(false), gravity(1500.0), jumpStrength(700.0), baseSpeed(540.0), currentSpeedMultiplier(1.0)
 {
     shieldComponent = new Shield(this);
     AddGOComponent(shieldComponent);
@@ -47,10 +46,10 @@ void Player::ResetState()
     dashComponent.isDashing         = false;
     dashComponent.dashTimer         = 0.0;
     dashComponent.dashCooldownTimer = 0.0;
-    isSprinting                     = false;
-    shiftHoldTimer                  = 0.0;
-    interactionTarget               = nullptr;
-    isInteracting                   = false;
+
+    currentSpeedMultiplier = 1.0;
+    interactionTarget      = nullptr;
+    isInteracting          = false;
 
     if (shieldComponent != nullptr)
     {
@@ -122,51 +121,33 @@ void Player::HandleInput(double dt)
         return;
     }
 
-    const bool shiftDown           = input.KeyDown(CS230::Input::Keys::LShift);
-    const bool shiftJustReleased   = input.KeyJustReleased(CS230::Input::Keys::LShift);
-    bool       canStartSpecialMove = dashComponent.dashCooldownTimer <= 0.0 && !dashComponent.IsDashing() && !isSprinting;
-
-    if (shiftDown)
+    if (input.KeyJustPressed(CS230::Input::Keys::LShift))
     {
-        if (canStartSpecialMove)
-        {
-            shiftHoldTimer += dt;
-            if (shiftHoldTimer >= sprintActivationTime)
-            {
-                isSprinting = true;
-            }
-        }
-    }
-    else if (shiftJustReleased)
-    {
-        if (shiftHoldTimer > 0.0 && shiftHoldTimer < sprintActivationTime)
-        {
-            if (canStartSpecialMove)
-            {
-                dashComponent.TryStartDash(faceRight);
-            }
-        }
-        isSprinting    = false;
-        shiftHoldTimer = 0.0;
-    }
-    else
-    {
-        isSprinting    = false;
-        shiftHoldTimer = 0.0;
+        dashComponent.TryStartDash(faceRight);
     }
 
     if (!dashComponent.IsDashing())
     {
-        double currentBaseSpeed = baseSpeed;
-        if (isSprinting)
-        {
-            currentBaseSpeed *= sprintSpeedMultiplier;
-        }
-
+        double targetMult = 1.0;
         if (shieldComponent && shieldComponent->IsGuardUp())
         {
-            currentBaseSpeed *= 0.1;
+            targetMult = minShieldSpeedMult;
         }
+
+        if (currentSpeedMultiplier > targetMult)
+        {
+            currentSpeedMultiplier -= shieldSlowdownRate * dt;
+            if (currentSpeedMultiplier < targetMult)
+                currentSpeedMultiplier = targetMult;
+        }
+        else if (currentSpeedMultiplier < targetMult)
+        {
+            currentSpeedMultiplier += shieldSlowdownRate * dt;
+            if (currentSpeedMultiplier > targetMult)
+                currentSpeedMultiplier = targetMult;
+        }
+
+        double currentSpeed = baseSpeed * currentSpeedMultiplier;
 
         Math::vec2 move{ 0.0, 0.0 };
         if (input.KeyDown(CS230::Input::Keys::A))
@@ -180,7 +161,7 @@ void Player::HandleInput(double dt)
             faceRight = true;
         }
 
-        SetVelocity({ move.x * currentBaseSpeed, GetVelocity().y });
+        SetVelocity({ move.x * currentSpeed, GetVelocity().y });
 
         if (!isJumping && (input.KeyJustPressed(CS230::Input::Keys::W) || input.KeyJustPressed(CS230::Input::Keys::Space)))
         {
@@ -392,9 +373,7 @@ void Player::DrawImGui()
         ImGui::Separator();
         ImGui::Text("Movement State:");
         ImGui::Checkbox("Is Jumping", &isJumping);
-        ImGui::Checkbox("Is Sprinting", &isSprinting);
         ImGui::Checkbox("Face Right", &faceRight);
-        ImGui::Text("Shift Hold Time: %.2f", shiftHoldTimer);
         ImGui::Text("Coyote Timer: %.2f", coyoteTimer);
         ImGui::Text("Jump Buffer: %.2f", jumpBufferTimer);
 

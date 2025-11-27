@@ -47,6 +47,7 @@ private:
     StarType starType;
 
     const double detectionRadius  = 500.0;
+    const double chaseRadius      = detectionRadius * 1.25;
     const double warningDuration  = 3.0;
     const double cooldownDuration = 5.0;
     const double parryWindowTime  = 0.5;

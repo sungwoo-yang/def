@@ -29,16 +29,24 @@ public:
     }
 
 private:
-    Math::vec2               headPosition;
-    Math::vec2               velocity;
+    void UpdateDirection(double dt);
+    void CalculateLaserPath();
+    void CheckCollisions();
+
+    Math::vec2               startPos;
+    Math::vec2               currentDir;
     Player*                  player;
     std::vector<TargetStar*> targets;
-    std::deque<Math::vec2>   pathPoints;
+    std::vector<Math::vec2>  pathPoints;
 
-    const double speed         = 600.0;
-    const double maxBeamLength = 600.0;
-    const double maxRange      = 4000.0;
+    const double maxLaserLength = 2500.0;
+    const double laserDuration  = 4.0;
+    const double rotationSpeed  = 1.5;
+    const double damageRadius   = 10.0;
 
-    double bounceCooldown = 0.0;
-    double currentLength  = 0.0;
+    const double detectionRange = 500.0;
+    const double chaseRange     = detectionRange * 1.25;
+
+    double      timer      = 0.0;
+    CS200::RGBA laserColor = CS200::YELLOW;
 };

@@ -50,7 +50,8 @@ namespace Physics
         return reflection.Normalize();
     }
 
-    std::vector<std::pair<Math::vec2, Math::vec2>> CalculateLaserPath(Math::vec2 startPos, Math::vec2 initialDir, const std::vector<std::pair<Math::vec2, Math::vec2>>& segments, int maxBounces)
+    std::vector<std::pair<Math::vec2, Math::vec2>>
+        CalculateLaserPath(Math::vec2 startPos, Math::vec2 initialDir, const std::vector<std::pair<Math::vec2, Math::vec2>>& segments, int maxBounces, double maxLength)
     {
         std::vector<std::pair<Math::vec2, Math::vec2>> path;
         Math::vec2                                     currentPos        = startPos;
@@ -96,7 +97,7 @@ namespace Physics
             }
             else
             {
-                Math::vec2 endPoint = currentPos + currentDir * 2000.0;
+                Math::vec2 endPoint = currentPos + currentDir * maxLength;
                 path.push_back({ currentPos, endPoint });
                 break;
             }
