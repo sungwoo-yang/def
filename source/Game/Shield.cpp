@@ -74,6 +74,25 @@ void Shield::HandleInput([[maybe_unused]] double dt)
     Math::vec2 dir = mouseWorldPos - owner->GetPosition();
     shieldAngle    = std::atan2(dir.y, dir.x);
 
+    bool rightClick = input.MouseButtonDown(CS230::Input::MouseButton::Right);
+
+    if (rightClick)
+    {
+        if (cooldownTimer <= 0.0 && !isShieldFrozen)
+        {
+            isGuarding = true;
+        }
+    }
+    else
+    {
+        if (isGuarding)
+        {
+            isGuarding    = false;
+            cooldownTimer = shieldCooldown;
+            Engine::GetLogger().LogDebug("Shield Lowered. Cooldown started.");
+        }
+    }
+
     if (input.MouseButtonJustPressed(CS230::Input::MouseButton::Right))
     {
         if (parryWindowActive)
@@ -104,12 +123,19 @@ bool Shield::ConsumeParryState()
 
 bool Shield::IsGuardUp() const
 {
-    return !isShieldFrozen && Engine::GetInput().MouseButtonDown(CS230::Input::MouseButton::Right);
+    return isGuarding && !isShieldFrozen;
 }
 
 void Shield::Update(double dt)
 {
     UpdatePosition();
+
+    if (cooldownTimer > 0.0)
+    {
+        cooldownTimer -= dt;
+        if (cooldownTimer < 0.0)
+            cooldownTimer = 0.0;
+    }
 
     if (isShieldFrozen)
     {
@@ -118,8 +144,14 @@ void Shield::Update(double dt)
         {
             isShieldFrozen    = false;
             shieldFrozenTimer = 0.0;
+            isGuarding        = false;
             Engine::GetLogger().LogEvent("Shield Unfrozen.");
         }
+    }
+
+    if (isShieldFrozen)
+    {
+        isGuarding = false;
     }
 
     UpdateShieldColor(dt);
@@ -163,9 +195,12 @@ void Shield::HandleHit(bool parrySuccess)
 {
     if (parrySuccess)
     {
-        isShieldFrozen    = true;
+        isShieldFrozen    = false;
         shieldFrozenTimer = 0.0;
-        Engine::GetLogger().LogEvent("Shield Frozen!");
+        isGuarding        = false;
+        cooldownTimer     = 0.0;
+
+        Engine::GetLogger().LogEvent("Perfect Parry! Shield Ready.");
     }
     else
     {
@@ -226,6 +261,7 @@ void Shield::DrawImGui()
 
         ImGui::Separator();
         ImGui::Text("Timers:");
+        ImGui::Text("Cooldown: %.2f / %.2f", static_cast<float>(cooldownTimer), static_cast<float>(shieldCooldown));
         ImGui::Text("Frozen Timer: %.2f / %.2f", static_cast<float>(shieldFrozenTimer), static_cast<float>(shieldFreezeDuration));
         ImGui::Text("Hit Timer: %.2f / %.2f", static_cast<float>(shieldHitTimer), static_cast<float>(shieldColorRecoveryTime));
 

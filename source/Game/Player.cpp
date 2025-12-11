@@ -6,6 +6,7 @@
 #include "Engine/GameStateManager.hpp"
 #include "Engine/Input.hpp"
 #include "Engine/Logger.hpp"
+#include "PushableMirror.hpp"
 #include "Shield.hpp"
 #include "WorldTextManager.hpp"
 #include <algorithm>
@@ -200,6 +201,9 @@ bool Player::CanCollideWith(GameObjectTypes other_object_type)
         return true;
     }
 
+    if (other_object_type == GameObjectTypes::PushableMirror)
+        return true;
+
     return false;
 }
 
@@ -332,6 +336,39 @@ void Player::ResolveCollision(GameObject* other_object)
             }
         }
     }
+
+    if (other_object->Type() == GameObjectTypes::PushableMirror)
+    {
+        auto mirrorBox = static_cast<PushableMirror*>(other_object);
+
+        CS230::RectCollision* my_collider    = GetGOComponent<CS230::RectCollision>();
+        CS230::RectCollision* other_collider = mirrorBox->GetGOComponent<CS230::RectCollision>();
+
+        if (my_collider && other_collider)
+        {
+            Math::rect my_rect    = my_collider->WorldBoundary();
+            Math::rect other_rect = other_collider->WorldBoundary();
+
+            // Y축이 겹쳐져 있어서 옆에서 미는 상황인지 확인
+            bool isSideCollision = my_rect.Top() > other_rect.Bottom() + 5.0 && my_rect.Bottom() < other_rect.Top() - 5.0;
+
+            if (isSideCollision)
+            {
+                // 플레이어가 왼쪽 -> 오른쪽으로 밈
+                if (GetPosition().x < mirrorBox->GetPosition().x)
+                {
+                    if (GetVelocity().x > 0)
+                        mirrorBox->Push({ GetVelocity().x * 0.9, 0 }); // 속도 전달
+                }
+                // 플레이어가 오른쪽 -> 왼쪽으로 밈
+                else
+                {
+                    if (GetVelocity().x < 0)
+                        mirrorBox->Push({ GetVelocity().x * 0.9, 0 });
+                }
+            }
+        }
+    }
 }
 
 void Player::Draw(const Math::TransformationMatrix& camera_matrix)
@@ -354,7 +391,6 @@ void Player::DrawImGui()
     ImGui::PushID(this);
     if (ImGui::TreeNode("Player"))
     {
-        // 위치 및 속도 조작 (Double -> Float 변환 필요)
         Math::vec2 pos  = GetPosition();
         float      p[2] = { static_cast<float>(pos.x), static_cast<float>(pos.y) };
         if (ImGui::DragFloat2("Position", p))
@@ -367,7 +403,7 @@ void Player::DrawImGui()
         if (ImGui::DragFloat2("Velocity", v))
         {
             SetVelocity({ v[0], v[1] });
-            velocityY = v[1]; // Player 내부 변수도 업데이트
+            velocityY = v[1];
         }
 
         ImGui::Separator();

@@ -33,6 +33,17 @@ void Star::Update(double dt)
     switch (currentState)
     {
         case State::Idle:
+            if (starType == StarType::Yellow)
+            {
+                if (distance > chaseRadius)
+                {
+                    currentState = State::Idle;
+                    timer        = 0.0;
+                    Engine::GetLogger().LogEvent("Player escaped Yellow Star warning range!");
+                    return;
+                }
+            }
+
             if (distance <= detectionRadius)
             {
                 currentState = State::Warning;
@@ -42,6 +53,21 @@ void Star::Update(double dt)
             break;
 
         case State::Warning:
+            if (distance > chaseRadius)
+            {
+                currentState = State::Idle;
+                timer        = 0.0;
+
+                if (starType == StarType::Red)
+                {
+                    if (player->GetShield())
+                    {
+                        player->GetShield()->SetParryWindowActive(false);
+                    }
+                }
+                return;
+            }
+
             if (starType == StarType::Red)
             {
                 Shield* shield = player->GetShield();

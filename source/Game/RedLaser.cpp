@@ -38,7 +38,6 @@ void RedLaser::Update(double dt)
         isCalculated = true;
 
         std::vector<std::pair<Math::vec2, Math::vec2>> walls;
-        bool                                           parried = false;
 
         if (player != nullptr)
         {
@@ -48,8 +47,28 @@ void RedLaser::Update(double dt)
                 auto segments = shield->GetSegments();
                 if (!segments.empty())
                 {
-                    walls.push_back(segments[0]);
-                    parried = true;
+                    Math::vec2 segStart = segments[0].first;
+                    Math::vec2 segEnd   = segments[0].second;
+                    Math::vec2 wallVec  = segEnd - segStart;
+                    Math::vec2 normal   = Math::vec2{ -wallVec.y, wallVec.x }.Normalize();
+
+                    Math::vec2 playerToShield = ((segStart + segEnd) * 0.5) - player->GetPosition();
+                    if (Math::dot(playerToShield, normal) < 0)
+                    {
+                        normal = -normal;
+                    }
+
+                    if (Math::dot(dir, normal) < 0)
+                    {
+                        walls.push_back(segments[0]);
+
+                        shield->HandleHit(true);
+                        Engine::GetLogger().LogEvent("Perfect Parry Success!");
+                    }
+                    else
+                    {
+                        Engine::GetLogger().LogEvent("Parry Failed: Wrong Direction!");
+                    }
                 }
             }
         }
@@ -83,13 +102,15 @@ void RedLaser::Update(double dt)
             if (hitSomething)
                 break;
 
-            if (!parried && player != nullptr)
+            if (player != nullptr)
             {
                 double playerR2 = 40.0 * 40.0;
+
                 if (DistToSegmentSquared(player->GetPosition(), p1, p2) <= playerR2)
                 {
+                    Math::vec2 hitPos = player->GetPosition();
                     player->ResetState();
-                    beams.push_back({ p1, player->GetPosition(), beamColor });
+                    beams.push_back({ p1, hitPos, beamColor });
                     hitSomething = true;
                     Engine::GetLogger().LogEvent("Player Hit by Red Laser!");
                     break;
@@ -103,7 +124,7 @@ void RedLaser::Update(double dt)
     }
 }
 
-void RedLaser::Draw(const Math::TransformationMatrix& /*camera_matrix*/)
+void RedLaser::Draw([[maybe_unused]] const Math::TransformationMatrix& camera_matrix)
 {
     auto& renderer = Engine::GetRenderer2D();
     for (const auto& beam : beams)

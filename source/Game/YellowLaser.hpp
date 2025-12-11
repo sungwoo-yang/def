@@ -45,7 +45,7 @@ private:
     const double damageRadius   = 10.0;
 
     const double detectionRange = 500.0;
-    const double chaseRange     = detectionRange * 1.25;
+    const double chaseRange     = detectionRange * 1.5;
 
     double      timer      = 0.0;
     CS200::RGBA laserColor = CS200::YELLOW;
