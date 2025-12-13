@@ -80,10 +80,6 @@ private:
     double       shieldHitTimer          = 0.0;
     const double shieldColorRecoveryTime = 1.0;
 
-    bool   isGuarding = false;
-    double cooldownTimer = 0.0;
-    const double shieldCooldown = 1.0;
-
     bool isParrying        = false;
     bool parryWindowActive = false;
 };

@@ -13,7 +13,6 @@
 #include "Engine/Window.hpp"
 #include "MiniMap.hpp"
 #include "Player.hpp"
-#include "PushableMirror.hpp"
 #include "Sign.hpp"
 #include "Star.hpp"
 #include "TargetStar.hpp"
@@ -118,17 +117,11 @@ void Mode1::InitGame()
     double r1_x = 7000.0;
     double r1_y = 750.0;
 
-    double y2_x = 9000.0;
-    double y2_y = 250.0;
-
-    Star* yellowStar1 = new Star({ y1_x, y1_y }, player, targetStars, StarType::Yellow);
-    gom->Add(yellowStar1);
+    Star* yellowStar = new Star({ y1_x, y1_y }, player, targetStars, StarType::Yellow);
+    gom->Add(yellowStar);
 
     Star* redStar = new Star({ r1_x, r1_y }, player, targetStars, StarType::Red);
     gom->Add(redStar);
-
-    Star* yellowStar2 = new Star({ y2_x, y2_y }, player, targetStars, StarType::Yellow);
-    gom->Add(yellowStar2);
 
     double platformY  = 200;
     double platformY2 = 500.0;
@@ -177,14 +170,10 @@ void Mode1::InitGame()
 
     // Door
     Math::vec2 doorSize = { 80, 120 };
-    double     door_x   = 10000.0;
+    double     door_x   = 8000.0;
     double     door_y   = platformY + (doorSize.y / 2.0);
 
     gom->Add(new Door({ door_x, door_y }, doorSize));
-
-    // PushableMirror
-    PushableMirror* box = new PushableMirror({ 9000.0, 300.0 }, { 80.0, 80.0 });
-    GetGSComponent<CS230::GameObjectManager>()->Add(box);
 }
 
 void Mode1::Update(double dt)

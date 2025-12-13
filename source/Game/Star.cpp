@@ -5,10 +5,9 @@
 #include "Engine/GameStateManager.hpp"
 #include "Engine/Logger.hpp"
 #include "Engine/Physics/Reflection.hpp"
-#include "Engine/ShowCollision.hpp"
+#include "Game/Shield.hpp"
 #include "Player.hpp"
 #include "RedLaser.hpp"
-#include "Shield.hpp"
 #include "YellowLaser.hpp"
 #include <imgui.h>
 
@@ -33,17 +32,6 @@ void Star::Update(double dt)
     switch (currentState)
     {
         case State::Idle:
-            if (starType == StarType::Yellow)
-            {
-                if (distance > chaseRadius)
-                {
-                    currentState = State::Idle;
-                    timer        = 0.0;
-                    Engine::GetLogger().LogEvent("Player escaped Yellow Star warning range!");
-                    return;
-                }
-            }
-
             if (distance <= detectionRadius)
             {
                 currentState = State::Warning;
@@ -53,21 +41,6 @@ void Star::Update(double dt)
             break;
 
         case State::Warning:
-            if (distance > chaseRadius)
-            {
-                currentState = State::Idle;
-                timer        = 0.0;
-
-                if (starType == StarType::Red)
-                {
-                    if (player->GetShield())
-                    {
-                        player->GetShield()->SetParryWindowActive(false);
-                    }
-                }
-                return;
-            }
-
             if (starType == StarType::Red)
             {
                 Shield* shield = player->GetShield();
@@ -123,23 +96,8 @@ void Star::Draw([[maybe_unused]] const Math::TransformationMatrix& camera_matrix
     Math::TransformationMatrix transform = GetMatrix() * Math::ScaleMatrix({ 40.0, 40.0 });
     renderer.DrawCircle(transform, color);
 
-    // 디버그 모드 체크
-    auto showCollision = Engine::GetGameStateManager().GetGSComponent<CS230::ShowCollision>();
-    bool isDebug       = (showCollision && showCollision->Enabled());
-
-    if (isDebug)
-    {
-        Math::TransformationMatrix detTransform = Math::TranslationMatrix(GetPosition()) * Math::ScaleMatrix({ detectionRadius * 2.0, detectionRadius * 2.0 });
-        renderer.DrawCircle(detTransform, CS200::CLEAR, 0xFF0000FF, 1.5);
-
-        Math::TransformationMatrix chaseTransform = Math::TranslationMatrix(GetPosition()) * Math::ScaleMatrix({ chaseRadius * 2.0, chaseRadius * 2.0 });
-        renderer.DrawCircle(chaseTransform, CS200::CLEAR, 0xFFFFFFFF, 1.5);
-    }
-    else
-    {
-        Math::TransformationMatrix rangeTransform = Math::TranslationMatrix(GetPosition()) * Math::ScaleMatrix({ detectionRadius * 2.0, detectionRadius * 2.0 });
-        renderer.DrawCircle(rangeTransform, CS200::CLEAR, 0x808080FF, 1.0);
-    }
+    Math::TransformationMatrix rangeTransform = Math::TranslationMatrix(GetPosition()) * Math::ScaleMatrix({ detectionRadius * 2.0, detectionRadius * 2.0 });
+    renderer.DrawCircle(rangeTransform, CS200::CLEAR, 0x808080FF, 1.0);
 
     if (currentState == State::Warning && player != nullptr)
     {
@@ -166,7 +124,7 @@ void Star::Draw([[maybe_unused]] const Math::TransformationMatrix& camera_matrix
 
         Math::vec2 dir = (player->GetPosition() - GetPosition()).Normalize();
 
-        auto path = Physics::CalculateLaserPath(GetPosition(), dir, walls, 2, 15000.0);
+        auto path = Physics::CalculateLaserPath(GetPosition(), dir, walls, 2);
 
         for (const auto& seg : path)
         {

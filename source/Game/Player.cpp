@@ -6,7 +6,6 @@
 #include "Engine/GameStateManager.hpp"
 #include "Engine/Input.hpp"
 #include "Engine/Logger.hpp"
-#include "PushableMirror.hpp"
 #include "Shield.hpp"
 #include "WorldTextManager.hpp"
 #include <algorithm>
@@ -24,8 +23,9 @@ namespace
 }
 
 Player::Player(Math::vec2 start_pos)
-    : CS230::GameObject(start_pos), startPosition(start_pos), previousPosition(start_pos), shieldComponent(nullptr), isJumping(true), currentPlatformIndex(std::nullopt), velocityY(0.0),
-      faceRight(true), interactionTarget(nullptr), isInteracting(false), gravity(1500.0), jumpStrength(700.0), baseSpeed(540.0), currentSpeedMultiplier(1.0)
+        : CS230::GameObject(start_pos), startPosition(start_pos), previousPosition(start_pos), shieldComponent(nullptr), isSprinting(false), shiftHoldTimer(0.0), isJumping(true),
+            currentPlatformIndex(std::nullopt), velocityY(0.0), faceRight(true), interactionTarget(nullptr), isInteracting(false), gravity(1500.0), jumpStrength(700.0), baseSpeed(300.0),
+            sprintSpeedMultiplier(1.8), sprintActivationTime(0.5)
 {
     shieldComponent = new Shield(this);
     AddGOComponent(shieldComponent);
@@ -47,10 +47,15 @@ void Player::ResetState()
     dashComponent.isDashing         = false;
     dashComponent.dashTimer         = 0.0;
     dashComponent.dashCooldownTimer = 0.0;
-
-    currentSpeedMultiplier = 1.0;
-    interactionTarget      = nullptr;
-    isInteracting          = false;
+    isSprinting                     = false;
+    shiftHoldTimer                  = 0.0;
+    interactionTarget               = nullptr;
+    isInteracting                   = false;
+    playerHp                        = maxPlayerHp;
+    healthState                     = HealthState::Full;
+    recoverDelayTimer               = 0.0;
+    tookDamageThisFrame             = false;
+    invincibilityTimer              = 0.0;
 
     if (shieldComponent != nullptr)
     {
@@ -70,6 +75,11 @@ void Player::Update(double dt)
 {
     interactionTarget = nullptr;
     previousPosition  = GetPosition();
+
+    if (invincibilityTimer > 0.0)
+    {
+        invincibilityTimer -= dt;
+    }
 
     if (jumpBufferTimer > 0.0)
         jumpBufferTimer -= dt;
@@ -104,6 +114,7 @@ void Player::Update(double dt)
     currentPlatformIndex = std::nullopt;
 
     GameObject::Update(dt);
+    UpdateHealthState(dt);
 }
 
 void Player::HandleInput(double dt)
@@ -122,33 +133,51 @@ void Player::HandleInput(double dt)
         return;
     }
 
-    if (input.KeyJustPressed(CS230::Input::Keys::LShift))
+    const bool shiftDown           = input.KeyDown(CS230::Input::Keys::LShift);
+    const bool shiftJustReleased   = input.KeyJustReleased(CS230::Input::Keys::LShift);
+    bool       canStartSpecialMove = dashComponent.dashCooldownTimer <= 0.0 && !dashComponent.IsDashing() && !isSprinting;
+
+    if (shiftDown)
     {
-        dashComponent.TryStartDash(faceRight);
+        if (canStartSpecialMove)
+        {
+            shiftHoldTimer += dt;
+            if (shiftHoldTimer >= sprintActivationTime)
+            {
+                isSprinting = true;
+            }
+        }
+    }
+    else if (shiftJustReleased)
+    {
+        if (shiftHoldTimer > 0.0 && shiftHoldTimer < sprintActivationTime)
+        {
+            if (canStartSpecialMove)
+            {
+                dashComponent.TryStartDash(faceRight);
+            }
+        }
+        isSprinting    = false;
+        shiftHoldTimer = 0.0;
+    }
+    else
+    {
+        isSprinting    = false;
+        shiftHoldTimer = 0.0;
     }
 
     if (!dashComponent.IsDashing())
     {
-        double targetMult = 1.0;
+        double currentBaseSpeed = baseSpeed;
+        if (isSprinting)
+        {
+            currentBaseSpeed *= sprintSpeedMultiplier;
+        }
+
         if (shieldComponent && shieldComponent->IsGuardUp())
         {
-            targetMult = minShieldSpeedMult;
+            currentBaseSpeed *= 0.1;
         }
-
-        if (currentSpeedMultiplier > targetMult)
-        {
-            currentSpeedMultiplier -= shieldSlowdownRate * dt;
-            if (currentSpeedMultiplier < targetMult)
-                currentSpeedMultiplier = targetMult;
-        }
-        else if (currentSpeedMultiplier < targetMult)
-        {
-            currentSpeedMultiplier += shieldSlowdownRate * dt;
-            if (currentSpeedMultiplier > targetMult)
-                currentSpeedMultiplier = targetMult;
-        }
-
-        double currentSpeed = baseSpeed * currentSpeedMultiplier;
 
         Math::vec2 move{ 0.0, 0.0 };
         if (input.KeyDown(CS230::Input::Keys::A))
@@ -162,7 +191,7 @@ void Player::HandleInput(double dt)
             faceRight = true;
         }
 
-        SetVelocity({ move.x * currentSpeed, GetVelocity().y });
+        SetVelocity({ move.x * currentBaseSpeed, GetVelocity().y });
 
         if (!isJumping && (input.KeyJustPressed(CS230::Input::Keys::W) || input.KeyJustPressed(CS230::Input::Keys::Space)))
         {
@@ -200,9 +229,6 @@ bool Player::CanCollideWith(GameObjectTypes other_object_type)
     {
         return true;
     }
-
-    if (other_object_type == GameObjectTypes::PushableMirror)
-        return true;
 
     return false;
 }
@@ -336,47 +362,51 @@ void Player::ResolveCollision(GameObject* other_object)
             }
         }
     }
-
-    if (other_object->Type() == GameObjectTypes::PushableMirror)
-    {
-        auto mirrorBox = static_cast<PushableMirror*>(other_object);
-
-        CS230::RectCollision* my_collider    = GetGOComponent<CS230::RectCollision>();
-        CS230::RectCollision* other_collider = mirrorBox->GetGOComponent<CS230::RectCollision>();
-
-        if (my_collider && other_collider)
-        {
-            Math::rect my_rect    = my_collider->WorldBoundary();
-            Math::rect other_rect = other_collider->WorldBoundary();
-
-            // Y축이 겹쳐져 있어서 옆에서 미는 상황인지 확인
-            bool isSideCollision = my_rect.Top() > other_rect.Bottom() + 5.0 && my_rect.Bottom() < other_rect.Top() - 5.0;
-
-            if (isSideCollision)
-            {
-                // 플레이어가 왼쪽 -> 오른쪽으로 밈
-                if (GetPosition().x < mirrorBox->GetPosition().x)
-                {
-                    if (GetVelocity().x > 0)
-                        mirrorBox->Push({ GetVelocity().x * 0.9, 0 }); // 속도 전달
-                }
-                // 플레이어가 오른쪽 -> 왼쪽으로 밈
-                else
-                {
-                    if (GetVelocity().x < 0)
-                        mirrorBox->Push({ GetVelocity().x * 0.9, 0 });
-                }
-            }
-        }
-    }
 }
 
 void Player::Draw(const Math::TransformationMatrix& camera_matrix)
 {
     CS200::IRenderer2D&        renderer  = Engine::GetRenderer2D();
     Math::TransformationMatrix transform = GetMatrix() * Math::ScaleMatrix(PLAYER_COLLISION_SIZE);
+    CS200::RGBA                playerColor = CS200::GREEN;
 
-    renderer.DrawRectangle(transform, CS200::GREEN, CS200::CLEAR, 0.0);
+    if (invincibilityTimer > 0.0)
+    {
+        // Blink effect: toggle visibility every 0.1 seconds
+        if (static_cast<int>(invincibilityTimer * 10.0) % 2 == 0)
+        {
+            // Set alpha to 100 (approx 0x64) for semi-transparency
+            // CS200::RGBA is 0xRRGGBBAA
+            playerColor = (playerColor & 0xFFFFFF00) | 100;
+        }
+    }
+
+    switch (healthState)
+    {
+    case HealthState::Full:
+        playerColor = CS200::GREEN;
+        break;
+    case HealthState::Healthy:
+        playerColor = CS200::CYAN;
+        break;
+    case HealthState::Hurt:
+        playerColor = CS200::YELLOW;
+        break;
+    case HealthState::Critical:
+        playerColor = 0xFFA500FF; // Orange
+        break;
+    case HealthState::NearDeath:
+        playerColor = CS200::RED;
+        break;
+    case HealthState::Dead:
+        playerColor = 0x8B0000FF; // Dark Red
+        break;
+    default:
+        playerColor = CS200::GREEN;
+        break;
+    }
+
+    renderer.DrawRectangle(transform, playerColor, CS200::CLEAR, 0.0);
 
     if (shieldComponent)
     {
@@ -391,6 +421,7 @@ void Player::DrawImGui()
     ImGui::PushID(this);
     if (ImGui::TreeNode("Player"))
     {
+        // 위치 및 속도 조작 (Double -> Float 변환 필요)
         Math::vec2 pos  = GetPosition();
         float      p[2] = { static_cast<float>(pos.x), static_cast<float>(pos.y) };
         if (ImGui::DragFloat2("Position", p))
@@ -403,13 +434,38 @@ void Player::DrawImGui()
         if (ImGui::DragFloat2("Velocity", v))
         {
             SetVelocity({ v[0], v[1] });
-            velocityY = v[1];
+            velocityY = v[1]; // Player 내부 변수도 업데이트
         }
+        
+        ImGui::Separator();
+        ImGui::Text("Player HP: %.2f / %.2f", playerHp, maxPlayerHp);
+
+        const char* stateItems[] = { "Dead", "Near Death", "Critical", "Hurt", "Healthy", "Full" };
+        int currentItem = 0;
+        int hpInt = static_cast<int>(playerHp + 0.001);
+
+        if (hpInt >= 5)      currentItem = 5;
+        else if (hpInt == 4) currentItem = 4;
+        else if (hpInt == 3) currentItem = 3;
+        else if (hpInt == 2) currentItem = 2;
+        else if (hpInt == 1) currentItem = 1;
+        else                 currentItem = 0;
+
+        if (ImGui::Combo("Health State", &currentItem, stateItems, 6))
+        {
+            playerHp = static_cast<double>(currentItem);
+        }
+        ImGui::Text("Recover Timer: %.2f", recoverDelayTimer);
+        ImGui::Text("Invincibility Timer: %.2f", invincibilityTimer);
 
         ImGui::Separator();
         ImGui::Text("Movement State:");
+
         ImGui::Checkbox("Is Jumping", &isJumping);
+        ImGui::Checkbox("Is Sprinting", &isSprinting);
         ImGui::Checkbox("Face Right", &faceRight);
+
+        ImGui::Text("Shift Hold Time: %.2f", shiftHoldTimer);
         ImGui::Text("Coyote Timer: %.2f", coyoteTimer);
         ImGui::Text("Jump Buffer: %.2f", jumpBufferTimer);
 
@@ -428,4 +484,68 @@ void Player::DrawImGui()
         ImGui::TreePop();
     }
     ImGui::PopID();
+}
+
+void Player::ApplyLaserDamage(double damageAmount)
+{
+    if (healthState == HealthState::Dead)
+    {
+        return;
+    }
+
+    if (damageAmount <= 0.0)
+    {
+        return;
+    }
+
+    if (invincibilityTimer > 0.0)
+    {
+        return;
+    }
+
+    tookDamageThisFrame = true;
+    recoverDelayTimer   = recoverDelayDuration;
+    invincibilityTimer  = invincibilityDuration;
+    
+    playerHp = std::max(0.0, playerHp - damageAmount);
+
+    if (playerHp <= 0.0)
+    {
+        playerHp    = 0.0;
+        healthState = HealthState::Dead;
+        Engine::GetLogger().LogEvent("Player died from laser damage.");
+    }
+}
+
+void Player::UpdateHealthState(double dt)
+{
+    if (healthState == HealthState::Dead)
+    {
+        return;
+    }
+
+    // Regeneration Logic
+    if (recoverDelayTimer > 0.0)
+    {
+        recoverDelayTimer = std::max(0.0, recoverDelayTimer - dt);
+    }
+    else if (playerHp < maxPlayerHp)
+    {
+        playerHp = std::min(maxPlayerHp, playerHp + 1.0);
+        if (playerHp < maxPlayerHp)
+        {
+            recoverDelayTimer = recoverDelayDuration;
+        }
+    }
+
+    // Update State based on HP
+    int hpInt = static_cast<int>(playerHp + 0.001);
+    if (hpInt >= 5)      healthState = HealthState::Full;
+    else if (hpInt == 4) healthState = HealthState::Healthy;
+    else if (hpInt == 3) healthState = HealthState::Hurt;
+    else if (hpInt == 2) healthState = HealthState::Critical;
+    else if (hpInt == 1) healthState = HealthState::NearDeath;
+    else                 healthState = HealthState::Dead;
+
+    tookDamageThisFrame = false;
 }

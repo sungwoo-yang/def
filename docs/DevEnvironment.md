@@ -8,7 +8,7 @@ Install the following tools:
    - Select C++-related packages during installation.
 2. [**CMake**](https://cmake.org/download/)
    - Ensure it is available on the command line (`PATH`) if prompted.
-3. [**Git SCM**](https://git-scm.com/downloads)
+3. [**Git SCM**](https://git-scm.com/downloads)wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
    - Ensure it is available on the command line (`PATH`) if prompted.
 4. [**Ninja Build**](https://github.com/ninja-build/ninja/releases)
    - Manually add it to the command line (`PATH`).

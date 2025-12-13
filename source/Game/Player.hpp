@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-class Shield;
+class Shield; 
 
 namespace CS200
 {
@@ -24,7 +24,7 @@ public:
     void Update(double dt) override;
     void Draw(const Math::TransformationMatrix& camera_matrix) override;
     void DrawImGui() override;
-
+    
     const Math::vec2& GetPosition() const
     {
         return GameObject::GetPosition();
@@ -51,7 +51,11 @@ public:
         return shieldComponent;
     }
 
+    void ApplyLaserDamage(double damageAmount);
+
     CS230::DashComponent  dashComponent;
+    bool                  isSprinting          = false;
+    double                shiftHoldTimer       = 0.0;
     bool                  isJumping            = false;
     std::optional<size_t> currentPlatformIndex = std::nullopt;
     double                velocityY            = 0.0;
@@ -64,20 +68,37 @@ private:
     void HandleInput(double dt);
 
     Shield* shieldComponent;
-
+    
     const double gravity;
     const double jumpStrength;
     const double baseSpeed;
-
-    double       currentSpeedMultiplier = 1.0;
-    const double shieldSlowdownRate     = 4.0;
-    const double minShieldSpeedMult     = 0.3;
+    const double sprintSpeedMultiplier;
+    const double sprintActivationTime;
 
     Math::vec2 startPosition;
     Math::vec2 previousPosition;
-
+    enum class HealthState {
+        Full,       // 5
+        Healthy,    // 4
+        Hurt,       // 3
+        Critical,   // 2
+        NearDeath,  // 1
+        Dead        // 0
+    };
+    HealthState  healthState        = HealthState::Full;
+    double       playerHp       = 5.0;
+    double       maxPlayerHp    = 5.0;
     double       jumpBufferTimer = 0.0;
     double       coyoteTimer     = 0.0;
     const double jumpBufferTime  = 0.1;
     const double coyoteTime      = 0.1;
+    double       recoverDelayTimer   = 0.0;
+    const double recoverDelayDuration = 5.0;
+    const double recoverRate          = 1.0;
+    bool         tookDamageThisFrame  = false;
+
+    double       invincibilityTimer = 0.0;
+    const double invincibilityDuration = 1.0;
+
+    void UpdateHealthState(double dt);
 };
