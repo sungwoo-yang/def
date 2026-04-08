@@ -1,3 +1,8 @@
+// Name       : Sungwoo Yang
+// Assignment : Camera Frustum Programming Assignment
+// Course     : CS250 Computer Graphics II
+// Term & Year: 2026 Spring
+
 #include "Camera.h"
 
 Camera::Camera(void)
