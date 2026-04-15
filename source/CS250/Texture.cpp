@@ -26,7 +26,7 @@ Texture::Texture(unsigned W, unsigned H)
     for (int i=0; i < width; ++i) {
       float u = iW*(i+0.5f),
             v = iH*(j+0.5f),
-            rr = pow(u-0.5f,2) + pow(v-0.5f,2);
+            rr = static_cast<float>(pow(u-0.5f,2) + pow(v-0.5f,2));
       int index = j*stride + 3*i;
       if (rr > 0.16f) {
         data[index+R] = (unsigned char)(100 + 155*u);
