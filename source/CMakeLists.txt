@@ -6,16 +6,16 @@
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 set(SOURCE_CODE 
-
     CS250/Affine.h CS250/Affine.cpp
     CS250/Camera.h CS250/Camera.cpp
-    CS250/HalfSpace.h
-    CS250/Interpolate.h CS250/Interpolate.cpp 
-    CS250/InterpolationTest.cpp 
+    CS250/CubeMesh.h CS250/CubeMesh.cpp
+    CS250/Mesh.h
     CS250/Projection.h CS250/Projection.cpp
-    CS250/Raster.h
-    CS250/RasterUtilities.h CS250/RasterUtilities.cpp
-    CS250/Texture.h CS250/Texture.cpp
+
+    CS250/Clip.h CS250/Clip.cpp
+    CS250/HalfSpace.h CS250/HalfSpace.cpp
+
+    CS250/ClipDemo.cpp
 )
 
 add_executable(cs200_fun ${SOURCE_CODE})
@@ -23,10 +23,6 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCE_CODE})
 
 target_link_libraries(cs200_fun PRIVATE project_options dependencies)
 target_include_directories(cs200_fun PRIVATE .)
-
-if(MSVC)
-    target_link_libraries(cs200_fun PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/CS250/lib/HalfSpace.lib")
-endif()
 
 # Check the IS_DEVELOPER_VERSION cache variable
 # This is set by the cmake configure preset
