@@ -1,7 +1,8 @@
 # author Rudy Castan
-# date 2025 Fall
-# CS200 Computer Graphics I
+# date 2025 Spring
+# CS250 Computer Graphics II
 # copyright DigiPen Institute of Technology
+
 
 # from here:
 #

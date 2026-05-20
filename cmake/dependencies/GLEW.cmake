@@ -1,6 +1,6 @@
 # author Rudy Castan
-# date 2025 Fall
-# CS200 Computer Graphics I
+# date 2025 Spring
+# CS250 Computer Graphics II
 # copyright DigiPen Institute of Technology
 
 # We will use GLEW for OpenGL bindings
@@ -21,10 +21,10 @@ if(NOT WIN32 AND NOT EMSCRIPTEN)
     target_include_directories(the_glew SYSTEM INTERFACE ${GLEW_INCLUDE_DIRS})
 elseif(WIN32)
     # download binaries for GLEW for windows x64
-    FetchContent_Declare(
+    CachedFetchContent_Declare(
         glew
-        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-        URL "https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip"
+        URL "https://github.com/nigels-com/glew/releases/download/glew-2.3.1/glew-2.3.1-win32.zip"
+        URL_HASH SHA256=3792b7bb563d2870ce08491fd3f1147f2fe6a27a43076df475eea7c2b853fd0f
     )
     FetchContent_MakeAvailable(glew)
 

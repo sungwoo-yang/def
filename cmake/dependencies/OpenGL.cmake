@@ -1,6 +1,6 @@
 # author Rudy Castan
-# date 2025 Fall
-# CS200 Computer Graphics I
+# date 2025 Spring
+# CS250 Computer Graphics II
 # copyright DigiPen Institute of Technology
 
 # most platforms should have OpenGL already available

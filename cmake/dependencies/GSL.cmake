@@ -1,13 +1,12 @@
 # author Rudy Castan
-# date 2025 Fall
-# CS200 Computer Graphics I
+# date 2025 Spring
+# CS250 Computer Graphics II
 # copyright DigiPen Institute of Technology
 
-FetchContent_Declare(
+CachedFetchContent_Declare(
     gsl
-    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-    URL https://github.com/microsoft/GSL/archive/refs/tags/v4.2.0.tar.gz
-    URL_HASH MD5=5f3d2f7ef9c6351503c0c8f1f9390144
+    URL https://github.com/microsoft/GSL/archive/refs/tags/v4.2.1.tar.gz
+    URL_HASH SHA256=d959f1cb8bbb9c94f033ae5db60eaf5f416be1baa744493c32585adca066fe1f
 )
 FetchContent_MakeAvailable(gsl)
 

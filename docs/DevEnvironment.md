@@ -25,6 +25,9 @@ Install the following tools:
 2. Open a terminal and run:
 
 ```sh
+    # Got to Home Directory
+    cd ~
+
    # Clone the emsdk repository
    git clone https://github.com/emscripten-core/emsdk.git
 
@@ -35,39 +38,11 @@ Install the following tools:
    git pull
 
    # Install the SDK tools
-   ./emsdk install 4.0.13
+   ./emsdk install 5.0.0
 
    # Activate this version for the current user
-   ./emsdk activate 4.0.13
-
-   # Set environment variables for the current terminal session
-   source ./emsdk_env.sh
+   ./emsdk activate 5.0.0
 ```
-
-### Emscripten Setup on Windows
-
-If your main development platform is Windows, you should use [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) for creating `Release` builds.
-
-However, for debugging with breakpoints, `WSL` may not work reliably. In this case, install the Windows version of Emscripten in your **User** directory (e.g., `C:/Users/<your-username>`). Follow these steps:
-
-```sh
-# Navigate to your User directory
-cd %USERPROFILE%
-
-# Clone the emsdk repository
-git clone https://github.com/emscripten-core/emsdk.git
-
-# Navigate to the directory
-cd emsdk
-
-# Install the SDK tools
-emsdk install 4.0.13
-
-# Activate this version
-emsdk activate 4.0.13
-```
-
-For more details on debugging, see [Web Debugging](DebuggingWeb.md).
 
 ## Ubuntu / Debian OS Setup
 
@@ -76,7 +51,7 @@ For more details on debugging, see [Web Debugging](DebuggingWeb.md).
 You need **GNU development tools** such as `make`, `git`, and other dependencies:
 
 ```sh
-sudo apt install build-essential git cmake ninja-build libsdl2-dev libglew-dev libopenal-dev
+sudo apt install build-essential git cmake ninja-build libsdl2-dev libglew-dev
 ```
 
 ## macOS Setup
@@ -102,7 +77,11 @@ Xcode is the integrated development environment (IDE) for macOS and includes nec
 
 2. **Install CMake, SDL2, and GLEW using Homebrew**:
    ```sh
-   brew install cmake ninja sdl2 glew openal-soft
+   brew install cmake ninja sdl2 glew
    ```
 
 This will install the required development tools and dependencies automatically.
+
+---
+
+Your environment should now be set up and ready for development!

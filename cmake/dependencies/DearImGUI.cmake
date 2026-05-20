@@ -1,14 +1,14 @@
 # author Rudy Castan
-# date 2025 Fall
-# CS200 Computer Graphics I
+# date 2025 Spring
+# CS250 Computer Graphics II
 # copyright DigiPen Institute of Technology
 
 # Depends on SDL2 and OpenGL
 
-FetchContent_Declare(
+CachedFetchContent_Declare(
     dearimgui
-    GIT_REPOSITORY https://github.com/ocornut/imgui.git
-    GIT_TAG a28cb615ff2c2ed8901397b00762d557cae24760 # latest from docking branch as of 8/22/2025
+    URL https://github.com/ocornut/imgui/archive/refs/tags/v1.92.5-docking.tar.gz
+    URL_HASH SHA256=c816c20e8c75f3e15ae867350e79925502d1a6a85938bb1a73b8927e5f31f9cb
 )
 FetchContent_MakeAvailable(dearimgui)
 

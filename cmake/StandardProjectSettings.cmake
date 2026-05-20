@@ -1,10 +1,13 @@
 # author Rudy Castan
-# date 2025 Fall
-# CS200 Computer Graphics I
+# date 2025 Spring
+# CS250 Computer Graphics II
 # copyright DigiPen Institute of Technology
 
-include(FetchContent)
 set(FETCHCONTENT_QUIET TRUE)
+include(FetchContent)
+set(FETCHCONTENT_BASE_DIR "${CMAKE_SOURCE_DIR}/build/_deps_${CMAKE_HOST_SYSTEM_NAME}")
+
+# Turn ON for verbose build output
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 # https://cmake.org/cmake/help/latest/policy/CMP0135.html

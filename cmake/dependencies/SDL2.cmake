@@ -1,23 +1,22 @@
 # author Rudy Castan
-# date 2025 Fall
-# CS200 Computer Graphics I
+# date 2025 Spring
+# CS250 Computer Graphics II
 # copyright DigiPen Institute of Technology
 
 # We will be using SDL2 for windowing & gl context creation
 # Linux platforms have a very easy way to install these depenencies and expose them to compilers so,
 #   we will use the builtin find_package
-# Emscripten has their own port of SDL2 builtin. We can just #include, define --use-port=sdl2, and start using it.
+# Emscripten has their own port of SDL2 builtin. We can just #include, define -sUSE_SDL=2, and start using it.
 #   Windows does not have a simple way to get it, so we download official windows binaries and link against those
 
 add_library(the_sdl2 INTERFACE)
 
 if(WIN32)
     # download binaries for SDL2 for windows x64
-    FetchContent_Declare(
+    CachedFetchContent_Declare(
         sdl2
-        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-        URL https://github.com/libsdl-org/SDL/releases/download/release-2.32.8/SDL2-devel-2.32.8-VC.zip
-        URL_HASH MD5=13172db35a91f3baac59e47187a2ebbb
+        URL https://github.com/libsdl-org/SDL/releases/download/release-2.32.10/SDL2-devel-2.32.10-VC.zip
+        URL_HASH SHA256=af347939395a58b365846aaea27391e69f9ec9d4dd650d6ac40802159b418a6e
     )
     FetchContent_MakeAvailable(sdl2)
 

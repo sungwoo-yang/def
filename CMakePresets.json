@@ -98,25 +98,6 @@
             }
         },
         {
-            "name": "web-debug-on-windows",
-            "displayName": "Web Debug on Windows",
-            "description": "Debug Build on Web for Windows",
-            "inherits": "conf-common",
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
-            },
-            "generator": "Ninja",
-            "toolchainFile": "$env{USERPROFILE}/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
-            "cacheVariables": {
-                "CMAKE_C_COMPILER": "$env{USERPROFILE}/emsdk/upstream/emscripten/emcc",
-                "CMAKE_CXX_COMPILER": "$env{USERPROFILE}/emsdk/upstream/emscripten/em++",
-                "CMAKE_BUILD_TYPE": "Debug",
-                "IS_DEVELOPER_VERSION": "TRUE"
-            }
-        },
-        {
             "name": "linux-debug",
             "displayName": "Linux Debug",
             "description": "Debug Build on Linux",
@@ -218,12 +199,6 @@
             "configurePreset": "windows-release",
             "inherits": "build-windows-common",
             "configuration": "Release"
-        },
-        {
-            "name": "web-debug-on-windows",
-            "configurePreset": "web-debug-on-windows",
-            "inherits": "build-windows-common",
-            "configuration": "Debug"
         },
         {
             "name": "linux-debug",
