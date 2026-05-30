@@ -1,7 +1,7 @@
 /**
  * \file
  * \author Rudy Castan
- * \author TODO Your Name
+ * \author Sungwoo Yang
  * \date 2025 Spring
  * \par CS250 Computer Graphics II
  * \copyright DigiPen Institute of Technology
@@ -10,5 +10,5 @@
 
 namespace window
 {
-    constexpr const char* Title = "CS250 TODO NAME Assignments";
+    constexpr const char* Title = "CS250 Sungwoo Yang Assignments";
 }

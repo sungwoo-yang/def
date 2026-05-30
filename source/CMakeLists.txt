@@ -1,5 +1,5 @@
 # author Rudy Castan
-# author TODO your name
+# author Sungwoo Yang
 # date 2025 Spring
 # CS250 Computer Graphics II
 # copyright DigiPen Institute of Technology

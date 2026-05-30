@@ -1,7 +1,7 @@
 /**
  * \file
  * \author Rudy Castan
- * \author TODO Your Name
+ * \author Sungwoo Yang
  * \date 2025 Spring
  * \par CS250 Computer Graphics II
  * \copyright DigiPen Institute of Technology
@@ -14,17 +14,16 @@
 
 namespace
 {
-    // TODO remove [[maybe_unused]]
-    opengl::Handle create_indices_buffer([[maybe_unused]] const void* data, [[maybe_unused]] GLsizei size_bytes)
+    opengl::Handle create_indices_buffer(const void* data, GLsizei size_bytes)
     {
-        /*
-        TODO
-             GL::GenBuffers - https://docs.gl/es3/glGenBuffers
-             GL::BindBuffer - bind newly created buffer https://docs.gl/es3/glBindBuffer
-             GL::BufferData - https://docs.gl/es3/glBufferData
-             GL::BindBuffer - unbind newly created buffer
-        */
-        return opengl::Handle{};
+        opengl::Handle buffer_handle = 0;
+
+        GL::GenBuffers(1, &buffer_handle);
+        GL::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer_handle);
+        GL::BufferData(GL_ELEMENT_ARRAY_BUFFER, size_bytes, data, GL_STATIC_DRAW);
+        GL::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+        return buffer_handle;
     }
 }
 
@@ -48,7 +47,10 @@ namespace opengl
 
     IndexBuffer::~IndexBuffer()
     {
-        // TODO use GL::DeleteBuffers - https://docs.gl/es3/glDeleteBuffers
+        if (indices_handle != 0)
+        {
+            GL::DeleteBuffers(1, &indices_handle);
+        }
     }
 
     IndexBuffer::IndexBuffer(IndexBuffer&& temp) noexcept : element_type(temp.element_type), count(temp.count), indices_handle(temp.indices_handle)
@@ -67,9 +69,8 @@ namespace opengl
         return *this;
     }
 
-    // TODO remove [[maybe_unused]]
-    void IndexBuffer::Use([[maybe_unused]] bool bind) const
+    void IndexBuffer::Use(bool bind) const
     {
-        // TODO use GL::BindBuffer - https://docs.gl/es3/glBindBuffer
+        GL::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, bind ? indices_handle : 0);
     }
 }

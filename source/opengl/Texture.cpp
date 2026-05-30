@@ -1,7 +1,7 @@
 /**
  * \file
  * \author Rudy Castan
- * \author TODO Your Name
+ * \author Sungwoo Yang
  * \date 2025 Spring
  * \par CS250 Computer Graphics II
  * \copyright DigiPen Institute of Technology
@@ -60,32 +60,37 @@ namespace opengl
         return result;
     }
 
-    // TODO remove [[maybe_unused]]
-    bool Texture::LoadFromMemory(int image_width, int image_height, [[maybe_unused]] const RGBA* colors) noexcept
+    bool Texture::LoadFromMemory(int image_width, int image_height, const RGBA* colors) noexcept
     {
+        if (image_width <= 0 || image_height <= 0 || colors == nullptr)
+        {
+            return false;
+        }
+
         delete_texture();
+
         width  = image_width;
         height = image_height;
-        /* TODO
-            GL::GenTextures - https://docs.gl/es3/glGenTextures
-            GL::BindTexture - https://docs.gl/es3/glBindTexture
-            GL::TexParameteri - set min filter - https://docs.gl/es3/glTexParameter
-            GL::TexParameteri - set mag filter
-            GL::TexParameteri - set wrap s
-            GL::TexParameteri - set wrap t
-            GL::TexImage2D - https://docs.gl/es3/glTexImage2D
-            GL::BindTexture - unbind
-        */
-        return true;
+
+        GL::GenTextures(1, &texture_handle);
+        GL::BindTexture(GL_TEXTURE_2D, texture_handle);
+
+        GL::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filtering);
+        GL::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filtering);
+        GL::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapping[S]);
+        GL::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapping[T]);
+
+        GL::TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, colors);
+
+        GL::BindTexture(GL_TEXTURE_2D, 0);
+
+        return texture_handle != 0;
     }
 
-    // TODO remove [[maybe_unused]]
-    void Texture::UseForSlot([[maybe_unused]] unsigned texture_unit) const noexcept
+    void Texture::UseForSlot(unsigned texture_unit) const noexcept
     {
-        /* TODO
-            GL::ActiveTexture - https://docs.gl/es3/glActiveTexture
-            GL::BindTexture - https://docs.gl/es3/glBindTexture
-        */
+        GL::ActiveTexture(GL_TEXTURE0 + texture_unit);
+        GL::BindTexture(GL_TEXTURE_2D, texture_handle);
     }
 
     void Texture::SetFiltering(Filtering how_to_filter) noexcept
@@ -94,11 +99,11 @@ namespace opengl
             return;
 
         filtering = how_to_filter;
-        /* TODO
-            GL::BindTexture
-            GL::TexParameteri - set min filter https://docs.gl/es3/glTexParameter
-            GL::TexParameteri -  set max filter
-        */
+
+        GL::BindTexture(GL_TEXTURE_2D, texture_handle);
+        GL::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filtering);
+        GL::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filtering);
+        GL::BindTexture(GL_TEXTURE_2D, 0);
     }
 
     void Texture::SetWrapping(Wrapping how_to_wrap, Coordinate coord) noexcept
@@ -106,9 +111,8 @@ namespace opengl
         if (texture_handle == 0)
             return;
 
-        // TODO remove both [[maybe_unused]]
-        [[maybe_unused]] GLenum coords_to_set[2] = {};
-        [[maybe_unused]] int    num_coords       = 1;
+        GLenum coords_to_set[2] = {};
+        int    num_coords       = 1;
         switch (coord)
         {
             case Coordinate::S:
@@ -128,16 +132,28 @@ namespace opengl
                 break;
         }
 
-        /* TODO
-            GL::BindTexture - https://docs.gl/es3/glBindTexture
-            for each coordinate
-                GL::TexParameteri - https://docs.gl/es3/glTexParameter
-        */
+        if (texture_handle == 0)
+        {
+            return;
+        }
+
+        GL::BindTexture(GL_TEXTURE_2D, texture_handle);
+
+        for (int i = 0; i < num_coords; ++i)
+        {
+            GL::TexParameteri(GL_TEXTURE_2D, coords_to_set[i], how_to_wrap);
+        }
+
+        GL::BindTexture(GL_TEXTURE_2D, 0);
     }
 
     void Texture::delete_texture() noexcept
     {
-        // TODO GL::DeleteTextures - https://docs.gl/es3/glDeleteTextures
+        if (texture_handle != 0)
+        {
+            GL::DeleteTextures(1, &texture_handle);
+        }
+
         texture_handle = 0;
         width          = 0;
         height         = 0;

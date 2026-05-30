@@ -1,7 +1,7 @@
 /**
  * \file
  * \author Rudy Castan
- * \author TODO Your Name
+ * \author Sungwoo Yang
  * \date 2025 Spring
  * \par CS250 Computer Graphics II
  * \copyright DigiPen Institute of Technology
@@ -89,6 +89,7 @@ namespace demos
     {
         GL::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         shader.Use();
+        shader.SendUniform("uTime", window::ElapsedTime);
         paintMeTexture.UseForSlot(0);
         shader.SendUniform("uTex2d", 0);
         quadMesh.Use();
