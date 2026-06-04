@@ -1,36 +1,32 @@
 ﻿/**
  * \file
- * \author TODO
- * \date 2024 Spring
+ * \author Rudy Castan
+ * \author Sungwoo Yang
+ * \date 2025 Spring
  * \par CS250 Computer Graphics II
  * \copyright DigiPen Institute of Technology
  */
 #pragma once
 
-
-#include <algorithm> // std::copy
-#include <numeric> // std::iota
-#include "util/Random.hpp"
-#include <utility> // std::swap
-#include <vector>
-
 #include "PeriodDimension.hpp"
+#include "util/Random.hpp"
+
+#include <algorithm>
+#include <numeric>
+#include <utility>
+#include <vector>
 
 namespace graphics::noise
 {
-
-    [[nodiscard]] constexpr int period_dimension_mask(PeriodDimension period_dimension) noexcept
-    {
-        return static_cast<int>(period_dimension) - 1;
-    }
-
     template <class RandomAccessIter>
     void my_random_shuffle(RandomAccessIter first, RandomAccessIter last)
     {
         int target_index = 1;
+
         for (auto target = first + 1; target != last; ++target_index, ++target)
         {
             const int offset = util::random(target_index + 1);
+
             if (offset != target_index)
             {
                 std::swap(*target, *(first + offset));
@@ -40,33 +36,39 @@ namespace graphics::noise
 
     class PermutationHash
     {
-
     public:
         PermutationHash() = default;
 
-         // TODO remove [[maybe_unused]] when implementing
-        explicit PermutationHash([[maybe_unused]] PeriodDimension table_size)
+        explicit PermutationHash(PeriodDimension table_size)
+            : mask(period_dimension_mask(table_size))
         {
-            // TODO implement this constructor
+            const int size = static_cast<int>(table_size);
+
+            permutation.resize(static_cast<size_t>(size));
+            std::iota(permutation.begin(), permutation.end(), 0);
+            my_random_shuffle(permutation.begin(), permutation.end());
         }
 
-        // TODO remove [[maybe_unused]] when implementing
-        [[nodiscard]] int operator()([[maybe_unused]] int x) const noexcept
+        [[nodiscard]] int operator()(int x) const noexcept
         {
-            // TODO implement this function
+            return permutation[static_cast<size_t>(x & mask)];
         }
 
-        // TODO remove [[maybe_unused]] when implementing
-        [[nodiscard]] int operator()([[maybe_unused]] int x, [[maybe_unused]] int y) const noexcept
+        [[nodiscard]] int operator()(int x, int y) const noexcept
         {
-            // TODO implement this function
+            return permutation[static_cast<size_t>((permutation[static_cast<size_t>(x & mask)] + y) & mask)];
         }
 
-        // TODO remove [[maybe_unused]] when implementing
-        [[nodiscard]] int operator()([[maybe_unused]] int x, [[maybe_unused]] int y, [[maybe_unused]] int z) const noexcept
+        [[nodiscard]] int operator()(int x, int y, int z) const noexcept
         {
-            // TODO implement this function
+            const int hashed_x  = permutation[static_cast<size_t>(x & mask)];
+            const int hashed_xy = permutation[static_cast<size_t>((hashed_x + y) & mask)];
+
+            return permutation[static_cast<size_t>((hashed_xy + z) & mask)];
         }
+
+    private:
+        int              mask = 0;
+        std::vector<int> permutation;
     };
-
 }

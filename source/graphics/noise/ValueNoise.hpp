@@ -1,7 +1,8 @@
 /**
  * \file
- * \author TODO
- * \date 2024 Spring
+ * \author Rudy Castan
+ * \author Sungwoo Yang
+ * \date 2025 Spring
  * \par CS250 Computer Graphics II
  * \copyright DigiPen Institute of Technology
  */
@@ -12,12 +13,13 @@
 #include "NoiseCoordinate.hpp"
 #include "PeriodDimension.hpp"
 #include "PermutationHash.hpp"
+#include "util/Random.hpp"
 
 #include <span>
+#include <vector>
 
 namespace graphics::noise
 {
-    /* TODO - Implement ValueNoise Class*/
     template <typename T>
     class [[nodiscard]] ValueNoise
     {
@@ -35,77 +37,122 @@ namespace graphics::noise
         constexpr void                       SetSmoothing(SmoothMethod smooth_method);
 
         [[nodiscard]] std::span<T> GetValues() noexcept;
+
+    private:
+        void reset_values(size_t old_size = 0);
+
+    private:
+        PeriodDimension periodDimension = PeriodDimension::_256;
+        SmoothMethod    smoothMethod    = SmoothMethod::Quintic;
+        PermutationHash permutationHash{ PeriodDimension::_256 };
+        std::vector<T>  values;
     };
 
-    // TODO remove [[maybe_unused]]
     template <typename T>
-    ValueNoise<T>::ValueNoise([[maybe_unused]] PeriodDimension period, [[maybe_unused]] SmoothMethod smooth_method)
+    ValueNoise<T>::ValueNoise(PeriodDimension period, SmoothMethod smooth_method) : periodDimension(period), smoothMethod(smooth_method), permutationHash(period)
     {
-        // TODO
+        reset_values();
     }
 
-    // TODO remove [[maybe_unused]]
     template <typename T>
-    T ValueNoise<T>::Evaluate([[maybe_unused]] float x) const noexcept
+    void ValueNoise<T>::reset_values(size_t old_size)
     {
-        // TODO
-        return T{};
+        const auto new_size = static_cast<size_t>(periodDimension);
+        values.resize(new_size);
+
+        for (size_t i = old_size; i < values.size(); ++i)
+        {
+            values[i] = T{ util::random(), util::random(), util::random(), 1.0f };
+        }
     }
 
-    // TODO remove [[maybe_unused]]
     template <typename T>
-    T ValueNoise<T>::Evaluate([[maybe_unused]] float x, [[maybe_unused]] float y) const noexcept
+    T ValueNoise<T>::Evaluate(float x) const noexcept
     {
-        // TODO
-        return T{};
+        const NoiseCoordinate x_coord = make_noise_coord(x);
+        const float           s       = fade(x_coord.interpolant, smoothMethod);
+
+        const LinearValues<T> linear_values{ values[static_cast<size_t>(permutationHash(x_coord.base))], values[static_cast<size_t>(permutationHash(x_coord.next))] };
+
+        return linear_mix(linear_values, s);
     }
 
-    // TODO remvoe [[maybe_unused]]
     template <typename T>
-    T ValueNoise<T>::Evaluate([[maybe_unused]] float x, [[maybe_unused]] float y, [[maybe_unused]] float z) const noexcept
+    T ValueNoise<T>::Evaluate(float x, float y) const noexcept
     {
-        // TODO
-        return T{};
+        const NoiseCoordinate x_coord = make_noise_coord(x);
+        const NoiseCoordinate y_coord = make_noise_coord(y);
+
+        const auto [s, t] = fade(x_coord.interpolant, y_coord.interpolant, smoothMethod);
+
+        const BiLinearValues<T> bilinear_values{
+            LinearValues<T>{ values[static_cast<size_t>(permutationHash(x_coord.base, y_coord.base))], values[static_cast<size_t>(permutationHash(x_coord.next, y_coord.base))] },
+            LinearValues<T>{ values[static_cast<size_t>(permutationHash(x_coord.base, y_coord.next))], values[static_cast<size_t>(permutationHash(x_coord.next, y_coord.next))] }
+        };
+
+        return bilinear_mix(bilinear_values, s, t);
+    }
+
+    template <typename T>
+    T ValueNoise<T>::Evaluate(float x, float y, float z) const noexcept
+    {
+        const NoiseCoordinate x_coord = make_noise_coord(x);
+        const NoiseCoordinate y_coord = make_noise_coord(y);
+        const NoiseCoordinate z_coord = make_noise_coord(z);
+
+        const auto [s, t, p] = fade(x_coord.interpolant, y_coord.interpolant, z_coord.interpolant, smoothMethod);
+
+        const TriLinearValues<T> trilinear_values{
+            BiLinearValues<T>{ LinearValues<T>{ values[static_cast<size_t>(permutationHash(x_coord.base, y_coord.base, z_coord.base))],
+ values[static_cast<size_t>(permutationHash(x_coord.next, y_coord.base, z_coord.base))] },
+                              LinearValues<T>{ values[static_cast<size_t>(permutationHash(x_coord.base, y_coord.next, z_coord.base))],
+                              values[static_cast<size_t>(permutationHash(x_coord.next, y_coord.next, z_coord.base))] } },
+            BiLinearValues<T>{ LinearValues<T>{ values[static_cast<size_t>(permutationHash(x_coord.base, y_coord.base, z_coord.next))],
+ values[static_cast<size_t>(permutationHash(x_coord.next, y_coord.base, z_coord.next))] },
+                              LinearValues<T>{ values[static_cast<size_t>(permutationHash(x_coord.base, y_coord.next, z_coord.next))],
+                              values[static_cast<size_t>(permutationHash(x_coord.next, y_coord.next, z_coord.next))] } }
+        };
+
+        return trilinear_mix(trilinear_values, s, t, p);
     }
 
     template <typename T>
     constexpr PeriodDimension ValueNoise<T>::GetPeriodDimension() const noexcept
     {
-        // TODO
-        return PeriodDimension{};
+        return periodDimension;
     }
 
-    // TODO remove [[maybe_unused]]
     template <typename T>
-    void ValueNoise<T>::SetPeriod([[maybe_unused]] PeriodDimension period)
+    void ValueNoise<T>::SetPeriod(PeriodDimension period)
     {
-        // TODO
+        if (periodDimension == period)
+        {
+            return;
+        }
+
+        const size_t old_size = values.size();
+
+        periodDimension = period;
+        permutationHash = PermutationHash{ periodDimension };
+
+        reset_values(old_size);
     }
 
     template <typename T>
     constexpr SmoothMethod ValueNoise<T>::GetSmoothing() const noexcept
     {
-        // TODO
-        return SmoothMethod{};
+        return smoothMethod;
     }
 
-    // TODO remove [[maybe_unused]]
     template <typename T>
-    constexpr void ValueNoise<T>::SetSmoothing([[maybe_unused]] SmoothMethod smooth_method)
+    constexpr void ValueNoise<T>::SetSmoothing(SmoothMethod smooth_method)
     {
-        // TODO
+        smoothMethod = smooth_method;
     }
-
-    // TODO remove this variable and implement this proper
-    template <typename T>
-    static inline std::array<T, 1> delete_me;
 
     template <typename T>
     std::span<T> ValueNoise<T>::GetValues() noexcept
     {
-        // TODO
-        return std::span<T>{ delete_me<T> };
+        return std::span<T>{ values };
     }
-
-
 }

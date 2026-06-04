@@ -20,6 +20,7 @@ namespace demos
         None,
         HelloQuad,
         ProceduralMeshes,
+        ValueNoise
     };
 
     gsl::owner<IDemo*> create_demo(Demos the_demo);

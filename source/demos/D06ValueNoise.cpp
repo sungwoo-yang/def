@@ -270,71 +270,63 @@ namespace demos
     {
         const auto texture_size = static_cast<size_t>(demo.textureSize);
         demo.colors.resize(texture_size * texture_size);
+
         frequency = static_cast<float>(demo.noisePeriod) / static_cast<float>(demo.textureSize);
+
         xyInputValues.resize(texture_size);
         for (column = 0; column < demo.textureSize; ++column)
         {
             const float x                              = static_cast<float>(column) * frequency;
             xyInputValues[static_cast<size_t>(column)] = x;
         }
+
         the_colors = demo.colors.data();
-        row = 0, column = 0;
-        y = 0;
+
+        row    = 0;
+        column = 0;
+        y      = 0.0f;
+
         switch (noiseDimension)
         {
             case Dimension::_1D:
                 width  = demo.textureSize;
                 height = 1;
                 break;
+
             case Dimension::_2D:
-            case Dimension::_3D: width = height = demo.textureSize; break;
+            case Dimension::_3D:
+                width  = demo.textureSize;
+                height = demo.textureSize;
+                break;
         }
+
         state = Generation::Working;
-        if constexpr (window::CanUseThreads)
-        {
-            jobSystem.DoJobs(
-                width * height,
-                [this, &demo](int index)
-                {
-                    const int   r     = index / width;
-                    const int   c     = index % width;
-                    const float the_x = xyInputValues[static_cast<size_t>(c)];
-                    const float the_y = xyInputValues[static_cast<size_t>(r)];
-                    the_colors[index] = get_color(demo.noise, the_x, the_y, z);
-                    //
-                });
-        }
     }
 
-    void D06ValueNoise::Generation::update([[maybe_unused]] const D06ValueNoise& demo)
+    void D06ValueNoise::Generation::update(const D06ValueNoise& demo)
     {
-        if constexpr (window::CanUseThreads)
+        timer.ResetTimeStamp();
+
+        while (timer.GetElapsedSeconds() < 1.0f / 32.0f)
         {
-            if (jobSystem.IsDone())
+            const float x = xyInputValues[static_cast<size_t>(column)];
+            *the_colors   = get_color(demo.noise, x, y, z);
+
+            ++the_colors;
+            ++column;
+
+            if (column >= width)
             {
-                state = Generation::UploadNewTexture;
-            }
-        }
-        else
-        {
-            timer.ResetTimeStamp();
-            while (timer.GetElapsedSeconds() < 1.0f / 32.0f)
-            {
-                const float x = xyInputValues[static_cast<size_t>(column)];
-                *the_colors   = get_color(demo.noise, x, y, z);
-                ++the_colors;
-                ++column;
-                if (column >= width)
+                ++row;
+                column = 0;
+
+                if (row >= height)
                 {
-                    ++row;
-                    column = 0;
-                    if (row >= height)
-                    {
-                        state = Generation::UploadNewTexture;
-                        break;
-                    }
-                    y = xyInputValues[static_cast<size_t>(row)];
+                    state = Generation::UploadNewTexture;
+                    break;
                 }
+
+                y = xyInputValues[static_cast<size_t>(row)];
             }
         }
     }

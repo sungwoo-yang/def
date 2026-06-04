@@ -11,6 +11,7 @@
 #include <GL/glew.h>
 #include <array>
 #include <filesystem>
+#include <gsl/pointers>
 
 #pragma once
 
@@ -33,7 +34,9 @@ namespace opengl
         static_assert(sizeof(RGBA) == 4, "RGBA should be the same as 4 bytes, so we can easily treat it as an RGBA int.");
 
         [[nodiscard]] bool LoadFromMemory(int image_width, int image_height, const RGBA* colors) noexcept;
+        [[nodiscard]] bool LoadAsRGBA(int image_width, int image_height) noexcept;
 
+        void UploadAsRGBA(gsl::not_null<const RGBA*> colors) noexcept;
         void UseForSlot(unsigned int texture_unit) const noexcept;
 
         [[nodiscard]] Handle GetHandle() const noexcept
@@ -91,7 +94,7 @@ namespace opengl
         void delete_texture() noexcept;
 
     private:
-        Handle                texture_handle = 0;
+        Handle                  texture_handle = 0;
         int                     width          = 0;
         int                     height         = 0;
         Filtering               filtering      = Filtering::NearestPixel;

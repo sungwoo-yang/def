@@ -15,7 +15,7 @@
 #include "opengl/Texture.hpp"
 #include <vector>
 
-#include "util/JobSystem.hpp"
+// #include "util/JobSystem.hpp"
 #include "util/Timer.hpp"
 
 namespace demos
@@ -104,7 +104,7 @@ namespace demos
             Pattern::Type      pattern        = Pattern::PlainValue;
             opengl::Texture::RGBA*   the_colors     = nullptr;
             util::Timer        timer;
-            util::JobSystem    jobSystem;
+            // util::JobSystem    jobSystem;
 
 
             void            setup(D06ValueNoise& demo);

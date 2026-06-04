@@ -1,12 +1,14 @@
 /**
  * \file
- * \author TODO
- * \date 2024 Spring
+ * \author Rudy Castan
+ * \author Sungwoo Yang
+ * \date 2025 Spring
  * \par CS250 Computer Graphics II
  * \copyright DigiPen Institute of Technology
  */
 #pragma once
 
+#include <array>
 #include <cmath>
 
 namespace graphics::noise
@@ -19,21 +21,35 @@ namespace graphics::noise
         Quintic
     };
 
-    // TODO remove [[maybe_unused]] when implementing
-    constexpr auto fade([[maybe_unused]] float x, [[maybe_unused]] SmoothMethod smoothing) noexcept
+    [[nodiscard]] inline float fade(float x, SmoothMethod smoothing) noexcept
     {
-        // TODO implement this function
+        switch (smoothing)
+        {
+            case SmoothMethod::Linear:
+                return x;
+
+            case SmoothMethod::Cosine:
+                {
+                    constexpr float pi = 3.14159265358979323846f;
+                    return (1.0f - std::cos(x * pi)) * 0.5f;
+                }
+
+            case SmoothMethod::Smoothstep:
+                return x * x * (3.0f - 2.0f * x);
+
+            case SmoothMethod::Quintic:
+            default:
+                return x * x * x * (x * (x * 6.0f - 15.0f) + 10.0f);
+        }
     }
 
-    // TODO remove [[maybe_unused]] when implementing
-    constexpr auto fade([[maybe_unused]] float x, [[maybe_unused]] float y, [[maybe_unused]] SmoothMethod smoothing) noexcept
+    [[nodiscard]] inline std::array<float, 2> fade(float x, float y, SmoothMethod smoothing) noexcept
     {
-        // TODO implement this function
+        return { fade(x, smoothing), fade(y, smoothing) };
     }
 
-    // TODO remove [[maybe_unused]] when implementing
-    constexpr auto fade([[maybe_unused]] float x, [[maybe_unused]] float y, [[maybe_unused]] float z, [[maybe_unused]] SmoothMethod smoothing) noexcept
+    [[nodiscard]] inline std::array<float, 3> fade(float x, float y, float z, SmoothMethod smoothing) noexcept
     {
-        // TODO implement this function
+        return { fade(x, smoothing), fade(y, smoothing), fade(z, smoothing) };
     }
 }

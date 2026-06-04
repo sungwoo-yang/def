@@ -87,6 +87,28 @@ namespace opengl
         return texture_handle != 0;
     }
 
+    bool Texture::LoadAsRGBA(int image_width, int image_height) noexcept
+    {
+        if (image_width <= 0 || image_height <= 0)
+        {
+            return false;
+        }
+
+        std::vector<RGBA> colors(static_cast<size_t>(image_width) * static_cast<size_t>(image_height), 0u);
+        return LoadFromMemory(image_width, image_height, colors.data());
+    }
+
+    void Texture::UploadAsRGBA(gsl::not_null<const RGBA*> colors) noexcept
+    {
+        constexpr int base_mipmap_level = 0;
+        constexpr int xoffset           = 0;
+        constexpr int yoffset           = 0;
+
+        GL::BindTexture(GL_TEXTURE_2D, GetHandle());
+        GL::TexSubImage2D(GL_TEXTURE_2D, base_mipmap_level, xoffset, yoffset, width, height, GL_RGBA, GL_UNSIGNED_BYTE, colors);
+        GL::BindTexture(GL_TEXTURE_2D, 0);
+    }
+
     void Texture::UseForSlot(unsigned texture_unit) const noexcept
     {
         GL::ActiveTexture(GL_TEXTURE0 + texture_unit);

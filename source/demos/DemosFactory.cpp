@@ -10,7 +10,7 @@
 
 #include "D01HelloQuad.hpp"
 #include "D02ProceduralMeshes.hpp"
-#include "util/Logger.hpp"
+#include "D06ValueNoise.hpp" #include "util/Logger.hpp"
 
 
 #include <algorithm>
@@ -34,6 +34,7 @@ namespace
     constexpr std::array DemoInformation = {
         DemoMetaData{        Demos::HelloQuad,        "Hello Quad",  "hello",        []() -> gsl::owner<IDemo*> { return new D01HelloQuad(); } },
         DemoMetaData{ Demos::ProceduralMeshes, "Procedural Meshes", "meshes", []() -> gsl::owner<IDemo*> { return new D02ProceduralMeshes(); } },
+        DemoMetaData{       Demos::ValueNoise,       "Value Noise",  "value",       []() -> gsl::owner<IDemo*> { return new D06ValueNoise(); } },
     };
 
     constexpr std::string to_lower_and_remove_whitespace(std::string_view s)

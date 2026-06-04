@@ -1,7 +1,8 @@
 /**
  * \file
- * \author TODO
- * \date 2024 Spring
+ * \author Rudy Castan
+ * \author Sungwoo Yang
+ * \date 2025 Spring
  * \par CS250 Computer Graphics II
  * \copyright DigiPen Institute of Technology
  */
@@ -9,7 +10,6 @@
 
 namespace graphics::noise
 {
-
     template <typename T>
     struct LinearValues
     {
@@ -17,11 +17,10 @@ namespace graphics::noise
         T Right{};
     };
 
-    // TODO remove [[maybe_unused]] when implementing
     template <typename T, typename U>
-    constexpr auto linear_mix([[maybe_unused]] const LinearValues<T>& values, [[maybe_unused]] U s) noexcept
+    [[nodiscard]] constexpr auto linear_mix(const LinearValues<T>& values, U s) noexcept
     {
-        // TODO implement this function
+        return values.Left + (values.Right - values.Left) * s;
     }
 
     template <typename T>
@@ -31,11 +30,13 @@ namespace graphics::noise
         LinearValues<T> Top{};
     };
 
-    // TODO remove [[maybe_unused]] when implementing
     template <typename T, typename U>
-    constexpr auto bilinear_mix([[maybe_unused]] const BiLinearValues<T>& values, [[maybe_unused]] U s, [[maybe_unused]] U t) noexcept
+    [[nodiscard]] constexpr auto bilinear_mix(const BiLinearValues<T>& values, U s, U t) noexcept
     {
-        // TODO implement this function
+        const auto bottom = linear_mix(values.Bottom, s);
+        const auto top    = linear_mix(values.Top, s);
+
+        return linear_mix(LinearValues<decltype(bottom)>{ bottom, top }, t);
     }
 
     template <typename T>
@@ -45,10 +46,12 @@ namespace graphics::noise
         BiLinearValues<T> Far{};
     };
 
-    // TODO remove [[maybe_unused]] when implementing
     template <typename T, typename U>
-    constexpr auto trilinear_mix([[maybe_unused]] const TriLinearValues<T>& values, [[maybe_unused]] U s, [[maybe_unused]] U t, [[maybe_unused]] U p) noexcept
+    [[nodiscard]] constexpr auto trilinear_mix(const TriLinearValues<T>& values, U s, U t, U p) noexcept
     {
-        // TODO implement this function
+        const auto near_value = bilinear_mix(values.Near, s, t);
+        const auto far_value  = bilinear_mix(values.Far, s, t);
+
+        return linear_mix(LinearValues<decltype(near_value)>{ near_value, far_value }, p);
     }
 }

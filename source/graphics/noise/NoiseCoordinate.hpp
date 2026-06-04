@@ -1,7 +1,8 @@
 /**
  * \file
- * \author TODO
- * \date 2024 Spring
+ * \author Rudy Castan
+ * \author Sungwoo Yang
+ * \date 2025 Spring
  * \par CS250 Computer Graphics II
  * \copyright DigiPen Institute of Technology
  */
@@ -16,10 +17,19 @@ namespace graphics::noise
         float interpolant = 0.0f;
     };
 
-    // TODO remove [[maybe_unused]] when implementing
-    constexpr NoiseCoordinate make_noise_coord([[maybe_unused]] float input) noexcept
+    [[nodiscard]] constexpr NoiseCoordinate make_noise_coord(float input) noexcept
     {
-        // TODO implement this function
-    }
+        int base = static_cast<int>(input);
 
+        if (input < static_cast<float>(base))
+        {
+            --base;
+        }
+
+        return NoiseCoordinate{
+            base,
+            base + 1,
+            input - static_cast<float>(base),
+        };
+    }
 }
