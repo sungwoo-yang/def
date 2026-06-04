@@ -10,7 +10,8 @@
 
 #include "D01HelloQuad.hpp"
 #include "D02ProceduralMeshes.hpp"
-#include "D06ValueNoise.hpp" #include "util/Logger.hpp"
+#include "D06ValueNoise.hpp" 
+#include "util/Logger.hpp"
 
 
 #include <algorithm>

@@ -10,17 +10,13 @@ precision highp float;
  * \copyright DigiPen Institute of Technology
  */
 
-layout(location = 0) in vec3 aVertexPosition;
-layout(location = 1) in vec3 aVertexNormal;
-layout(location = 2) in vec2 aVertexTextureCoordinates;
+in vec2 vTextureCoordinates;
 
-uniform mat4 uProjection;
-uniform vec2 uTileScale;
+uniform sampler2D uTex2d;
 
-out vec2 vTextureCoordinates;
+layout(location = 0) out vec4 fFragmentColor;
 
 void main()
 {
-    gl_Position         = uProjection * vec4(aVertexPosition, 1.0);
-    vTextureCoordinates = aVertexTextureCoordinates * uTileScale;
+    fFragmentColor = texture(uTex2d, vTextureCoordinates);
 }
