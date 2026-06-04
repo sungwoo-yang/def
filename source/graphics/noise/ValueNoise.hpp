@@ -62,7 +62,8 @@ namespace graphics::noise
 
         for (size_t i = old_size; i < values.size(); ++i)
         {
-            values[i] = T{ util::random(), util::random(), util::random(), 1.0f };
+            const float random_value = util::random();
+            values[i]                = T{ random_value, random_value, random_value, 1.0f };
         }
     }
 
