@@ -120,7 +120,7 @@ namespace demos
     {
         assetReloader.Update();
 
-        constexpr double FUDGE_FACTOR = 1.25;
+        constexpr float FUDGE_FACTOR = 1.25f;
         const auto       easing       = std::min(static_cast<float>(window::DeltaTime * FUDGE_FACTOR), 1.0f);
         eyePosition += easing * (targetEyePosition - eyePosition);
         viewDistance += easing * (targetViewDistance - viewDistance);

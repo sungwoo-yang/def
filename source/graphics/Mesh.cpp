@@ -1,7 +1,7 @@
 /**
  * \file
  * \author Rudy Castan
- * \author TODO Your Name
+ * \author Sungwoo Yang
  * \date 2024 Spring
  * \par CS250 Computer Graphics II
  * \copyright DigiPen Institute of Technology
@@ -17,7 +17,7 @@ namespace
     std::vector<graphics::MeshVertex> create_plane_vertices(int stacks, int slices);
     std::vector<unsigned>             build_index_buffer(int stacks, int slices);
     std::vector<unsigned>             convert_to_lines_pattern(const std::vector<unsigned>& indices);
-    glm::vec3                         evaluate_trefoil(float row, float col);
+    // glm::vec3                         evaluate_trefoil(float row, float col);
 
 }
 
@@ -97,175 +97,221 @@ namespace graphics
 
     Geometry create_sphere(int stacks, int slices)
     {
-        /* TODO - implement generation of sphere geometry
+        std::vector<MeshVertex> vertices;
+        vertices.reserve(static_cast<size_t>(stacks + 1) * static_cast<size_t>(slices + 1));
 
-            vertices = emptyList
-            numVertices = (stacks + 1) * (slices + 1)
-            reserve(vertices, numVertices)
-            for stack in range(0, stacks + 1):
-                row = stack / stacks
-                beta = PI * (row - 0.5)
-                sin_beta = sin(beta)
-                cos_beta = cos(beta)
-                for slice in range(0, slices + 1):
-                    radius = 0.5
-                    col = slice / slices
-                    alpha = col * 2 * PI
-                    v = MeshVertex()
-                    v.position = Vec3(
-                        radius * sin(alpha) * cos_beta,
-                        radius * sin_beta,
-                        radius * cos(alpha) * cos_beta
-                    )
-                    v.normal = v.position / radius
-                    v.uv = Vec2(col, row)
-                    append(vertices, v)
-            indices = buildIndexBuffer(stacks, slices)
-            return Geometry(vertices, indices)
-        */
-        return create_cube(stacks, slices);
+        constexpr float radius = 0.5f;
+
+        for (int stack = 0; stack <= stacks; ++stack)
+        {
+            const float row      = static_cast<float>(stack) / static_cast<float>(stacks);
+            const float beta     = PI * (row - 0.5f);
+            const float sin_beta = std::sin(beta);
+            const float cos_beta = std::cos(beta);
+
+            for (int slice = 0; slice <= slices; ++slice)
+            {
+                const float col   = static_cast<float>(slice) / static_cast<float>(slices);
+                const float alpha = col * 2.0f * PI;
+
+                MeshVertex vertex;
+                vertex.position = glm::vec3(radius * std::sin(alpha) * cos_beta, radius * sin_beta, radius * std::cos(alpha) * cos_beta);
+                vertex.normal   = vertex.position / radius;
+                vertex.uv       = glm::vec2(col, row);
+
+                vertices.push_back(vertex);
+            }
+        }
+
+        auto indices = build_index_buffer(stacks, slices);
+        return Geometry{ std::move(vertices), std::move(indices) };
     }
 
     Geometry create_torus(int stacks, int slices, float start_angle, float end_angle)
     {
-        /* TODO - implement generation of torus geometry
-        vertices = emptyList
-        numVertices = (stacks + 1) * (slices + 1)
-        reserve(vertices, numVertices)
-        R = 0.35
-        r = 0.15
-        for stack in range(0, stacks + 1):
-            row = stack / stacks
-            alpha = lerp(startAngle, endAngle, row)
-            sin_alpha = sin(alpha)
-            cos_alpha = cos(alpha)
-            for slice in range(0, slices + 1):
-                col = slice / slices
-                beta = lerp(2*PI, 0, col)
-                cos_beta = cos(beta)
-                v = MeshVertex()
-                v.position.x = (R + r * cos_beta) * sin_alpha
-                v.position.y = r * sin(beta)
-                v.position.z = (R + r * cos_beta) * cos_alpha
-                center = Vec3(R * sin_alpha, 0, R * cos_alpha)
-                v.normal = (v.position - center) / r
-                v.uv = Vec2(col, row)
-                append(vertices, v)
-        indices = buildIndexBuffer(stacks, slices)
-        return Geometry(vertices, indices)
-        */
-        return create_cube(stacks, slices);
+        std::vector<MeshVertex> vertices;
+        vertices.reserve(static_cast<size_t>(stacks + 1) * static_cast<size_t>(slices + 1));
+
+        constexpr float major_radius = 0.35f;
+        constexpr float minor_radius = 0.15f;
+
+        for (int stack = 0; stack <= stacks; ++stack)
+        {
+            const float row   = static_cast<float>(stack) / static_cast<float>(stacks);
+            const float alpha = start_angle + row * (end_angle - start_angle);
+
+            const float sin_alpha = std::sin(alpha);
+            const float cos_alpha = std::cos(alpha);
+
+            for (int slice = 0; slice <= slices; ++slice)
+            {
+                const float col  = static_cast<float>(slice) / static_cast<float>(slices);
+                const float beta = 2.0f * PI * (1.0f - col);
+
+                const float sin_beta = std::sin(beta);
+                const float cos_beta = std::cos(beta);
+
+                MeshVertex vertex;
+                vertex.position.x = (major_radius + minor_radius * cos_beta) * sin_alpha;
+                vertex.position.y = minor_radius * sin_beta;
+                vertex.position.z = (major_radius + minor_radius * cos_beta) * cos_alpha;
+
+                const glm::vec3 center = glm::vec3(major_radius * sin_alpha, 0.0f, major_radius * cos_alpha);
+
+                vertex.normal = (vertex.position - center) / minor_radius;
+                vertex.uv     = glm::vec2(col, row);
+
+                vertices.push_back(vertex);
+            }
+        }
+
+        auto indices = build_index_buffer(stacks, slices);
+        return Geometry{ std::move(vertices), std::move(indices) };
     }
 
     void add_cap(std::vector<MeshVertex>& vertices, std::vector<unsigned>& indices, float center_y, int slices)
     {
-        /* TODO - implement logic to create a cap
-         R = 0.5
-        centerIndex = size(vertices)
-        vertex = MeshVertex()
+        constexpr float radius = 0.5f;
 
-        textureCoordScale = if centerY > 0 then 1.0 else -1.0
+        const unsigned center_index = static_cast<unsigned>(vertices.size());
 
-        vertex.normal = if centerY > 0 then Vec3(0, 1, 0) else Vec3(0, -1, 0)
-        vertex.position = Vec3(0, centerY, 0)
-        vertex.uv = Vec2(0.5, 0.5)
-        append(vertices, vertex)
+        MeshVertex vertex;
+        vertex.position = glm::vec3(0.0f, center_y, 0.0f);
+        vertex.normal   = (center_y > 0.0f) ? glm::vec3(0.0f, 1.0f, 0.0f) : glm::vec3(0.0f, -1.0f, 0.0f);
+        vertex.uv       = glm::vec2(0.5f, 0.5f);
+        vertices.push_back(vertex);
 
-        for slice in range(0, slices + 1):
-            col = slice / slices
-            alpha = col * PI * 2.0
-            sinAlpha = sin(alpha)
-            cosAlpha = cos(alpha)
-            vertex.position.x = R * sinAlpha
-            vertex.position.z = R * cosAlpha
-            vertex.uv = Vec2(textureCoordScale * 0.5 * cosAlpha + 0.5, 0.5 * sinAlpha + 0.5)
-            append(vertices, vertex)
+        const float texture_coord_scale = (center_y > 0.0f) ? 1.0f : -1.0f;
 
-        k = centerIndex + 1
-        secondIndexOffset = if centerY > 0 then 0 else 1
-        thirdIndexOffset = if centerY > 0 then 1 else 0
-        for i in range(0, slices - 1):
-            append(indices, centerIndex, k + secondIndexOffset, k + thirdIndexOffset)
-            k++
-        if centerY > 0:
-            append(indices, centerIndex, k, centerIndex + 1)
-        else:
-            append(indices, centerIndex, centerIndex + 1, k)
-        */
+        for (int slice = 0; slice <= slices; ++slice)
+        {
+            const float col   = static_cast<float>(slice) / static_cast<float>(slices);
+            const float alpha = col * 2.0f * PI;
+
+            const float sin_alpha = std::sin(alpha);
+            const float cos_alpha = std::cos(alpha);
+
+            vertex.position = glm::vec3(radius * sin_alpha, center_y, radius * cos_alpha);
+            vertex.normal   = (center_y > 0.0f) ? glm::vec3(0.0f, 1.0f, 0.0f) : glm::vec3(0.0f, -1.0f, 0.0f);
+            vertex.uv       = glm::vec2(texture_coord_scale * 0.5f * cos_alpha + 0.5f, 0.5f * sin_alpha + 0.5f);
+
+            vertices.push_back(vertex);
+        }
+
+        const unsigned ring_start = center_index + 1u;
+
+        for (int slice = 0; slice < slices; ++slice)
+        {
+            const unsigned current = ring_start + static_cast<unsigned>(slice);
+            const unsigned next    = current + 1u;
+
+            if (center_y > 0.0f)
+            {
+                indices.push_back(center_index);
+                indices.push_back(current);
+                indices.push_back(next);
+            }
+            else
+            {
+                indices.push_back(center_index);
+                indices.push_back(next);
+                indices.push_back(current);
+            }
+        }
     }
 
     Geometry create_cylinder(int stacks, int slices)
     {
-        /* TODO - implement logic to create cylinder
-           vertices = emptyList
-           numVertices = (stacks + 1) * (slices + 1) + (slices * 2 + 2)
-           reserve(vertices, numVertices)
-           R = 0.5
-           for stack in range(0, stacks + 1):
-               row = stack / stacks
-               for slice in range(0, slices + 1):
-                   col = slice / slices
-                   alpha = col * PI * 2.0
-                   vertex = MeshVertex()
-                   sinAlpha = sin(alpha)
-                   cosAlpha = cos(alpha)
-                   vertex.position.x = R * sinAlpha
-                   vertex.position.y = row - 0.5
-                   vertex.position.z = R * cosAlpha
-                   vertex.normal = Vec3(sinAlpha, 0, cosAlpha)
-                   vertex.uv = Vec2(col, row)
-                   append(vertices, vertex)
+        std::vector<MeshVertex> vertices;
+        vertices.reserve(static_cast<size_t>(stacks + 1) * static_cast<size_t>(slices + 1) + static_cast<size_t>(slices + 2) * 2u);
 
-           indices = buildIndexBuffer(stacks, slices)
-           addCap(vertices, indices, 0.5, slices)
-           addCap(vertices, indices, -0.5, slices)
+        constexpr float radius = 0.5f;
 
-           return Geometry(vertices, indices)
-       */
-        return create_cube(stacks, slices);
+        for (int stack = 0; stack <= stacks; ++stack)
+        {
+            const float row = static_cast<float>(stack) / static_cast<float>(stacks);
+
+            for (int slice = 0; slice <= slices; ++slice)
+            {
+                const float col   = static_cast<float>(slice) / static_cast<float>(slices);
+                const float alpha = col * 2.0f * PI;
+
+                const float sin_alpha = std::sin(alpha);
+                const float cos_alpha = std::cos(alpha);
+
+                MeshVertex vertex;
+                vertex.position.x = radius * sin_alpha;
+                vertex.position.y = row - 0.5f;
+                vertex.position.z = radius * cos_alpha;
+                vertex.normal     = glm::vec3(sin_alpha, 0.0f, cos_alpha);
+                vertex.uv         = glm::vec2(col, row);
+
+                vertices.push_back(vertex);
+            }
+        }
+
+        auto indices = build_index_buffer(stacks, slices);
+
+        add_cap(vertices, indices, 0.5f, slices);
+        add_cap(vertices, indices, -0.5f, slices);
+
+        return Geometry{ std::move(vertices), std::move(indices) };
     }
 
     Geometry create_cone(int stacks, int slices)
     {
-        /* TODO implement logic to create cone
-            vertices = emptyList
-            numVertices = (stacks + 1) * (slices + 1) + (slices + 1)
-            reserve(vertices, numVertices)
-            R = 0.5
-            TopRadius = 0.0
-            BottomRadius = R
-            TopYValue = 0.5
-            BottomYValue = -0.5
-            Rise = TopYValue - BottomYValue
-            Run = TopRadius - BottomRadius
-            Slope = Rise / Run
-            TangentSlope = -1.0 / Slope
-            for stack in range(0, stacks + 1):
-                row = stack / stacks
-                h = row - 0.5
-                for slice in range(0, slices + 1):
-                    col = slice / slices
-                    alpha = col * PI * 2.0
-                    sinAlpha = sin(alpha)
-                    cosAlpha = cos(alpha)
-                    vertex = MeshVertex()
-                    vertex.position.x = R * (0.5 - h) * sinAlpha
-                    vertex.position.y = h
-                    vertex.position.z = R * (0.5 - h) * cosAlpha
-                    if stack != stacks:
-                        vertex.normal = normalize(Vec3(sinAlpha, TangentSlope, cosAlpha))
-                    else:
-                        vertex.normal = Vec3(0, 1, 0)
-                    vertex.uv = Vec2(col, row)
-                    append(vertices, vertex)
+        std::vector<MeshVertex> vertices;
+        vertices.reserve(static_cast<size_t>(stacks + 1) * static_cast<size_t>(slices + 1) + static_cast<size_t>(slices + 2));
 
-            indices = buildIndexBuffer(stacks, slices)
-            addCap(vertices, indices, -0.5, slices)
+        constexpr float radius        = 0.5f;
+        constexpr float top_radius    = 0.0f;
+        constexpr float bottom_radius = radius;
+        constexpr float top_y         = 0.5f;
+        constexpr float bottom_y      = -0.5f;
 
-            return Geometry(vertices, indices)
-        */
+        constexpr float rise          = top_y - bottom_y;
+        constexpr float run           = top_radius - bottom_radius;
+        constexpr float slope         = rise / run;
+        constexpr float tangent_slope = -1.0f / slope;
 
-        return create_cube(stacks, slices);
+        for (int stack = 0; stack <= stacks; ++stack)
+        {
+            const float row = static_cast<float>(stack) / static_cast<float>(stacks);
+            const float h   = row - 0.5f;
+
+            for (int slice = 0; slice <= slices; ++slice)
+            {
+                const float col   = static_cast<float>(slice) / static_cast<float>(slices);
+                const float alpha = col * 2.0f * PI;
+
+                const float sin_alpha = std::sin(alpha);
+                const float cos_alpha = std::cos(alpha);
+
+                MeshVertex vertex;
+                vertex.position.x = radius * (0.5f - h) * sin_alpha;
+                vertex.position.y = h;
+                vertex.position.z = radius * (0.5f - h) * cos_alpha;
+
+                if (stack != stacks)
+                {
+                    vertex.normal = glm::normalize(glm::vec3(sin_alpha, tangent_slope, cos_alpha));
+                }
+                else
+                {
+                    vertex.normal = glm::vec3(0.0f, 1.0f, 0.0f);
+                }
+
+                vertex.uv = glm::vec2(col, row);
+
+                vertices.push_back(vertex);
+            }
+        }
+
+        auto indices = build_index_buffer(stacks, slices);
+
+        add_cap(vertices, indices, -0.5f, slices);
+
+        return Geometry{ std::move(vertices), std::move(indices) };
     }
 
     SubMesh to_submesh_as_triangles(const Geometry& geometry, Material* material)
@@ -294,105 +340,127 @@ namespace
 {
     std::vector<graphics::MeshVertex> create_plane_vertices(int stacks, int slices)
     {
-        /* TODO Implement me second
-           vertices = emptyList
-           numVertices = (stacks + 1) * (slices + 1)
-           reserve(vertices, numVertices)
+        std::vector<graphics::MeshVertex> vertices;
+        vertices.reserve(static_cast<size_t>(stacks + 1) * static_cast<size_t>(slices + 1));
 
-           for stack in range(0, stacks + 1):
-               row = stack / stacks
-               for slice in range(0, slices + 1):
-                   col = slice / slices
-                   v = MeshVertex()
-                   v.position = Vec3(col - 0.5, row - 0.5, 0.0)
-                   v.normal = Vec3(0.0, 0.0, 1.0)
-                   v.uv = Vec2(col, row)
-                   append(vertices, v)
+        for (int stack = 0; stack <= stacks; ++stack)
+        {
+            const float row = static_cast<float>(stack) / static_cast<float>(stacks);
 
-           return vertices
-       */
-        return {};
+            for (int slice = 0; slice <= slices; ++slice)
+            {
+                const float col = static_cast<float>(slice) / static_cast<float>(slices);
+
+                graphics::MeshVertex vertex;
+                vertex.position = glm::vec3(col - 0.5f, row - 0.5f, 0.0f);
+                vertex.normal   = glm::vec3(0.0f, 0.0f, 1.0f);
+                vertex.uv       = glm::vec2(col, row);
+
+                vertices.push_back(vertex);
+            }
+        }
+
+        return vertices;
     }
 
     std::vector<unsigned> build_index_buffer(int stacks, int slices)
     {
-        /* TODO Implement this FIRST!
-            p0, p1, p2, p3, p4, p5 = 0, 0, 0, 0, 0, 0
+        std::vector<unsigned> indices;
+        indices.reserve(static_cast<size_t>(stacks) * static_cast<size_t>(slices) * 6u);
 
-           indices = emptyList
-           numTriangles = stacks * slices * 2
-           numIndices = numTriangles * 3
-           reserve(indices, numIndices)
-           stride = slices + 1
+        const int stride = slices + 1;
 
-           for i in range(0, stacks):
-               currRow = i * stride
+        for (int stack = 0; stack < stacks; ++stack)
+        {
+            const int currRow = stack * stride;
 
-               for j in range(0, slices):
-                   # Compute indices for the first triangle
-                   p0 = currRow + j
-                   p1 = p0 + 1
-                   p2 = p1 + stride
+            for (int slice = 0; slice < slices; ++slice)
+            {
+                const unsigned p0 = static_cast<unsigned>(currRow + slice);
+                const unsigned p1 = p0 + 1;
+                const unsigned p2 = p1 + static_cast<unsigned>(stride);
 
-                   append(indices, p0, p1, p2)
+                indices.push_back(p0);
+                indices.push_back(p1);
+                indices.push_back(p2);
 
-                   # Compute indices for the second triangle
-                   p3 = p2
-                   p4 = p3 - 1
-                   p5 = p0
+                const unsigned p3 = p2;
+                const unsigned p4 = p3 - 1;
+                const unsigned p5 = p0;
 
-                   append(indices, p3, p4, p5)
+                indices.push_back(p3);
+                indices.push_back(p4);
+                indices.push_back(p5);
+            }
+        }
 
-           return indices
-       */
-        return {};
+        return indices;
     }
 
     std::vector<unsigned> convert_to_lines_pattern(const std::vector<unsigned>& indices)
     {
-        /* TODO Implement me
-                    linesIndices = emptyList
-                    i = 0
+        std::vector<unsigned> lines_indices;
+        lines_indices.reserve(indices.size() * 2u);
 
-                    if size(indices) > 6:
-                        limit = if size(indices) % 6 == 0 then size(indices) else size(indices) - 5
+        size_t i = 0;
 
-                        while i < limit:
-                            p0 = indices[i]
-                            p1 = indices[i + 1]
-                            p2 = indices[i + 2]
-                            p3 = indices[i + 3]
-                            p4 = indices[i + 4]
-                            p5 = indices[i + 5]
+        if (indices.size() >= 6)
+        {
+            const size_t limit = (indices.size() % 6 == 0) ? indices.size() : indices.size() - 5u;
 
-                            if p1 != (p0 + 1) or p3 != p2 or p4 != (p3 - 1) or p5 != p0:
-                                break
+            while (i < limit)
+            {
+                const unsigned p0 = indices[i + 0];
+                const unsigned p1 = indices[i + 1];
+                const unsigned p2 = indices[i + 2];
+                const unsigned p3 = indices[i + 3];
+                const unsigned p4 = indices[i + 4];
+                const unsigned p5 = indices[i + 5];
 
-                            # Outline of the quad
-                            append(linesIndices, p0, p1)
-                            append(linesIndices, p1, p2)
-                            append(linesIndices, p2, p4)
-                            append(linesIndices, p4, p0)
+                if (p1 != p0 + 1 || p3 != p2 || p4 != p3 - 1 || p5 != p0)
+                {
+                    break;
+                }
 
-                            i += 6
+                lines_indices.push_back(p0);
+                lines_indices.push_back(p1);
 
-                    if i < size(indices) and size(indices) - i >= 3:
-                        limit = if size(indices) % 3 == 0 then size(indices) else size(indices) - 2
+                lines_indices.push_back(p1);
+                lines_indices.push_back(p2);
 
-                        while i < limit:
-                            p0 = indices[i]
-                            p1 = indices[i + 1]
-                            p2 = indices[i + 2]
+                lines_indices.push_back(p2);
+                lines_indices.push_back(p4);
 
-                            append(linesIndices, p0, p1)
-                            append(linesIndices, p1, p2)
-                            append(linesIndices, p2, p0)
+                lines_indices.push_back(p4);
+                lines_indices.push_back(p0);
 
-                            i += 3
+                i += 6;
+            }
+        }
 
-                    return linesIndices
+        if (i < indices.size() && indices.size() - i >= 3)
+        {
+            const size_t limit = (indices.size() % 3 == 0) ? indices.size() : indices.size() - 2u;
 
-                */
-        return indices;
+            while (i < limit)
+            {
+                const unsigned p0 = indices[i + 0];
+                const unsigned p1 = indices[i + 1];
+                const unsigned p2 = indices[i + 2];
+
+                lines_indices.push_back(p0);
+                lines_indices.push_back(p1);
+
+                lines_indices.push_back(p1);
+                lines_indices.push_back(p2);
+
+                lines_indices.push_back(p2);
+                lines_indices.push_back(p0);
+
+                i += 3;
+            }
+        }
+
+        return lines_indices;
     }
 }
