@@ -13,21 +13,25 @@ set(SOURCE_CODE
 
     demos/D01HelloQuad.hpp demos/D01HelloQuad.cpp
     demos/D02ProceduralMeshes.hpp demos/D02ProceduralMeshes.cpp
-    demos/DemosFactory.hpp demos/DemosFactory.cpp
+    demos/D05ShadowMapping.hpp demos/D05ShadowMapping.cpp
     demos/D06ValueNoise.hpp demos/D06ValueNoise.cpp
+    demos/DemosFactory.hpp demos/DemosFactory.cpp
 
     demos/IDemo.hpp
 
-    graphics/Material.hpp graphics/Material.cpp
-    graphics/Mesh.hpp graphics/Mesh.cpp
     graphics/noise/Fade.hpp
     graphics/noise/Interpolation.hpp
     graphics/noise/NoiseCoordinate.hpp
     graphics/noise/PeriodDimension.hpp
     graphics/noise/PermutationHash.hpp
     graphics/noise/ValueNoise.hpp
+    graphics/Camera.hpp
+    graphics/Material.hpp graphics/Material.cpp
+    graphics/MathHelper.hpp
+    graphics/Mesh.hpp graphics/Mesh.cpp
 
     opengl/Environment.hpp
+    opengl/FrameBuffer.hpp opengl/FrameBuffer.cpp
     opengl/GL.hpp opengl/GL.cpp
     opengl/Handle.hpp
     opengl/IndexBuffer.hpp opengl/IndexBuffer.cpp

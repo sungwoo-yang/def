@@ -1,7 +1,7 @@
 /**
  * \file
  * \author Rudy Castan
- * \author TODO Your Name
+ * \author Sungwoo Yang
  * \date 2025 Spring
  * \par CS250 Computer Graphics II
  * \copyright DigiPen Institute of Technology
@@ -33,10 +33,9 @@ namespace opengl
         return *this;
     }
 
-    // TODO remove [[maybe_unused]]
-    void FrameBuffer::Use([[maybe_unused]] bool bind) const
+    void FrameBuffer::Use(bool bind) const
     {
-        // TODO GL::BindFramebuffer - https://docs.gl/es3/glBindFramebuffer
+        GL::BindFramebuffer(GL_FRAMEBUFFER, bind ? frameBufferHandle : 0);
     }
 
     void FrameBuffer::LoadWithSpecification(Specification spec)
@@ -75,19 +74,25 @@ namespace opengl
             colorTexture = Texture();
         }
 
-
         GLenum status_result{};
-        /* TODO
-                GL::GenFramebuffers - https://docs.gl/es3/glGenFramebuffers
-                GL::BindFramebuffer - https://docs.gl/es3/glBindFramebuffer
-                if depth format is not None
-                    GL::FramebufferTexture2D - add depth attachment https://docs.gl/es3/glFramebufferTexture2D
-                if color format is not None
-                    GL::FramebufferTexture2D - add color 0 attachment
-                GL::DrawBuffers - https://docs.gl/es3/glDrawBuffers
-                GL::CheckFramebufferStatus - https://docs.gl/es3/glCheckFramebufferStatus
-                GL::BindFramebuffer - unbind framebuffer
-        */
+
+        GL::GenFramebuffers(1, &frameBufferHandle);
+        GL::BindFramebuffer(GL_FRAMEBUFFER, frameBufferHandle);
+
+        if (spec.DepthFormat != Texture::DepthComponentSize::None)
+        {
+            GL::FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture.GetHandle(), 0);
+        }
+
+        if (spec.ColorFormat != ColorComponent::None)
+        {
+            GL::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture.GetHandle(), 0);
+        }
+
+        GL::DrawBuffers(1, draw_buffers);
+        status_result = GL::CheckFramebufferStatus(GL_FRAMEBUFFER);
+
+        GL::BindFramebuffer(GL_FRAMEBUFFER, 0);
 
         if (status_result != GL_FRAMEBUFFER_COMPLETE)
         {
@@ -107,7 +112,13 @@ namespace opengl
 
     void FrameBuffer::delete_resources() noexcept
     {
-        // TODO GL::DeleteFramebuffers - https://docs.gl/es3/glDeleteFramebuffers
+        if (frameBufferHandle != 0)
+        {
+            GL::DeleteFramebuffers(1, &frameBufferHandle);
+        }
+
         frameBufferHandle = 0;
+        depthTexture      = Texture();
+        colorTexture      = Texture();
     }
 }

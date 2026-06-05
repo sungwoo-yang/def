@@ -8,6 +8,7 @@
  */
 #include "Texture.hpp"
 
+#include "Environment.hpp"
 #include "GL.hpp"
 #include "assets/Path.hpp"
 #include <GL/glew.h>
@@ -62,7 +63,7 @@ namespace opengl
 
     bool Texture::LoadFromMemory(int image_width, int image_height, const RGBA* colors) noexcept
     {
-        if (image_width <= 0 || image_height <= 0 || colors == nullptr)
+        if (image_width <= 0 || image_height <= 0)
         {
             return false;
         }
@@ -80,7 +81,57 @@ namespace opengl
         GL::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapping[S]);
         GL::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapping[T]);
 
-        GL::TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, colors);
+        GL::TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, colors);
+
+        GL::BindTexture(GL_TEXTURE_2D, 0);
+
+        return texture_handle != 0;
+    }
+
+    bool Texture::LoadAsDepthTexture(int image_width, int image_height, DepthComponentSize bit_depth) noexcept
+    {
+        if (image_width <= 0 || image_height <= 0 || bit_depth == DepthComponentSize::None)
+        {
+            return false;
+        }
+
+        delete_texture();
+
+        width  = image_width;
+        height = image_height;
+
+        GL::GenTextures(1, &texture_handle);
+        GL::BindTexture(GL_TEXTURE_2D, texture_handle);
+
+        if (opengl::IsWebGL || opengl::current_version() >= opengl::version(4, 2))
+        {
+            GL::TexStorage2D(GL_TEXTURE_2D, 1, bit_depth, width, height);
+        }
+        else
+        {
+            GLenum data_type = GL_UNSIGNED_INT;
+
+            if (bit_depth == DepthComponentSize::DepthBits16)
+            {
+                data_type = GL_UNSIGNED_SHORT;
+            }
+            else if (bit_depth == DepthComponentSize::DepthBits32F)
+            {
+                data_type = GL_FLOAT;
+            }
+
+            GL::TexImage2D(GL_TEXTURE_2D, 0, bit_depth, width, height, 0, GL_DEPTH_COMPONENT, data_type, nullptr);
+        }
+
+        filtering = Filtering::Linear;
+        wrapping  = { Wrapping::ClampToEdge, Wrapping::ClampToEdge };
+
+        GL::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filtering);
+        GL::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filtering);
+        GL::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapping[S]);
+        GL::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapping[T]);
+        GL::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+        GL::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LESS);
 
         GL::BindTexture(GL_TEXTURE_2D, 0);
 
@@ -89,13 +140,7 @@ namespace opengl
 
     bool Texture::LoadAsRGBA(int image_width, int image_height) noexcept
     {
-        if (image_width <= 0 || image_height <= 0)
-        {
-            return false;
-        }
-
-        std::vector<RGBA> colors(static_cast<size_t>(image_width) * static_cast<size_t>(image_height), 0u);
-        return LoadFromMemory(image_width, image_height, colors.data());
+        return LoadFromMemory(image_width, image_height, nullptr);
     }
 
     void Texture::UploadAsRGBA(gsl::not_null<const RGBA*> colors) noexcept

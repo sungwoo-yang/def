@@ -20,6 +20,7 @@ namespace demos
         None,
         HelloQuad,
         ProceduralMeshes,
+        ShadowMapping,
         ValueNoise
     };
 

@@ -1,7 +1,7 @@
 /**
  * \file
  * \author Rudy Castan
- * \author TODO Your Name
+ * \author Sungwoo Yang
  * \date 2025 Spring
  * \par CS250 Computer Graphics II
  * \copyright DigiPen Institute of Technology
@@ -228,58 +228,78 @@ namespace demos
 
     void D05ShadowMapping::renderToDepthBuffer() const
     {
-        /* TODO
-            Use the WriteDepth shader
-            Send the Projection as the light's projection matrix
-            Send the ViewMatrix as the light's view matrix
-            Send the NearDistance as the light's near distance
-            Send the FarDistance as the light's far distance
+        const auto& shader = shaders[Shaders::WriteDepth];
 
-            set clear color to pure white
-            use the shadow frame buffer
-            clear the color buffer and depth buffer
-            set the viewport to the shadow frame buffer dimensions
-            enable culling
-            enable depth testing
-            enable depth writing
-            enable Polygon Offset Fill
-            invoke polygon offset fill with specified factor & units fields
-            draw scene objects with WriteDepth shader and cull front or back facing triangles based off of ImGui setting
-            reset culling to back facing triangles
-            do not use the shadow frame buffer anymore
-            disable Polygon Offset Fill
-            set viewport back to the saved settings from the `viewport` field
-        */
+        shader.Use();
+        shader.SendUniform(Uniforms::Projection, lightProjectionMatrix);
+        shader.SendUniform(Uniforms::ViewMatrix, lightCamera.ViewMatrix());
+        shader.SendUniform(Uniforms::NearDistance, lightNear);
+        shader.SendUniform(Uniforms::FarDistance, lightFar);
+
+        GL::ClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+        shadowFrameBuffer.Use();
+        GL::Viewport(0, 0, shadowMapWidth, shadowMapHeight);
+        GL::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        GL::Enable(GL_CULL_FACE);
+        GL::Enable(GL_DEPTH_TEST);
+        GL::DepthMask(GL_TRUE);
+
+        GL::Enable(GL_POLYGON_OFFSET_FILL);
+        GL::PolygonOffset(glPolygonOffset_factor, glPolygonOffset_units);
+
+        const GLenum face_to_cull = drawBackFacesForRecordDepthPass ? GL_FRONT : GL_BACK;
+        drawSceneObjects(shader, face_to_cull);
+
+        GL::CullFace(GL_BACK);
+        shadowFrameBuffer.Use(false);
+
+        GL::Disable(GL_POLYGON_OFFSET_FILL);
+        GL::Viewport(viewport.x, viewport.y, viewport.width, viewport.height);
     }
 
     void D05ShadowMapping::renderToScreen() const
     {
-        /* TODO
-        set clear color to be fog color
-        clear color buffer and depth buffer
-        enable depth testing
-        enable depth writing
-        use the shadow frame buffers depth texture for slot 0
-        draw scene objects using the Shadow shader and with back face culling
-        */
+        GL::ClearColor(FogColor.r, FogColor.g, FogColor.b, 1.0f);
+        GL::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        GL::Enable(GL_DEPTH_TEST);
+        GL::DepthMask(GL_TRUE);
+
+        shadowFrameBuffer.DepthTexture().UseForSlot(0);
+        drawSceneObjects(shaders[Shaders::Shadow], GL_BACK);
     }
 
     void D05ShadowMapping::drawLightFrustum() const
     {
         if (shouldDrawLightFrustum && cameraMode != CameraMode::Light)
         {
-            /* TODO
-                Use the Fill shader
-                send Projection as camera's projection matrix
-                send ViewMatrix as the camera's view matrix
-                send the Diffuse color as pure white
-                create ModelMatrix as matrix that goes from the light's clip space to world space
-                    clip space to light's view space is the inverse of the light's projection matrix
-                    light's view space to world space is the light's camera's ToWorld matrix
-                send the model matrix
-                use the ndc Cube's vertex array object
-                draw the ndc Cube as an Indexed draw
-            */
+            const auto& shader = shaders[Shaders::Fill];
+
+            shader.Use();
+            shader.SendUniform(Uniforms::Projection, projectionMatrix);
+            shader.SendUniform(Uniforms::ViewMatrix, camera.ViewMatrix());
+            shader.SendUniform(Uniforms::Diffuse, glm::vec3(1.0f));
+
+            const float projection_x = lightProjectionMatrix[0][0];
+            const float projection_y = lightProjectionMatrix[1][1];
+            const float projection_z = lightProjectionMatrix[2][2];
+            const float projection_w = lightProjectionMatrix[3][2];
+
+            const glm::mat4 inverse_light_projection{
+                glm::vec4{ 1.0f / projection_x,                0.0f,  0.0f,                        0.0f },
+                glm::vec4{                0.0f, 1.0f / projection_y,  0.0f,                        0.0f },
+                glm::vec4{                0.0f,                0.0f,  0.0f,         1.0f / projection_w },
+                glm::vec4{                0.0f,                0.0f, -1.0f, projection_z / projection_w }
+            };
+
+            const glm::mat4 ModelMatrix = lightCamera.ToWorldMatrix() * inverse_light_projection;
+
+            shader.SendUniform(Uniforms::ModelMatrix, ModelMatrix);
+
+            ndcCube.VertexArrayObj.Use();
+            opengl::DrawIndexed(ndcCube.VertexArrayObj);
         }
     }
 
@@ -287,17 +307,21 @@ namespace demos
     {
         if (shouldDrawDepthTexture)
         {
-            /* TODO
-                disable depth testing
-                disable culling faces
-                use the ViewDepth shader
-                send 0 for the ShadowMap sampler uniform
-                use the shadow frame buffer's color texture for slot 0
-                use the ndc Quad vertex array object
-                draw the ndc Quad as an Indexed draw
-                enable depth testing
-                enable culling faces
-            */
+            GL::Disable(GL_DEPTH_TEST);
+            GL::Disable(GL_CULL_FACE);
+
+            const auto& shader = shaders[Shaders::ViewDepth];
+
+            shader.Use();
+            shader.SendUniform(Uniforms::ShadowMap, 0);
+
+            shadowFrameBuffer.ColorTexture().UseForSlot(0);
+
+            ndcQuad.VertexArrayObj.Use();
+            opengl::DrawIndexed(ndcQuad.VertexArrayObj);
+
+            GL::Enable(GL_DEPTH_TEST);
+            GL::Enable(GL_CULL_FACE);
         }
     }
 

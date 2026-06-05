@@ -4,7 +4,7 @@ precision highp float;
 /**
  * \file
  * \author Rudy Castan
- * \author TODO Your Name
+ * \author Sungwoo Yang
  * \date 2025 Spring
  * \par CS250 Computer Graphics II
  * \copyright DigiPen Institute of Technology
@@ -25,9 +25,12 @@ uniform mat4 uShadowMatrix;
 
 void main()
 {
-    // TODO set gl_Position to position in clip space
-    // TODO set vNormalInViewSpace to be normal in view space 
-    // TODO set vPositionInViewSpace to be position in view space
-    // TODO set vPositionInShadowSpace to be in shadow space
-    gl_Position = vec4(aVertexPosition, 1.0);
+    vec4 positionInWorldSpace = uModelMatrix * vec4(aVertexPosition, 1.0);
+    vec4 positionInViewSpace  = uViewMatrix * positionInWorldSpace;
+
+    gl_Position = uProjection * positionInViewSpace;
+
+    vNormalInViewSpace   = normalize(uNormalMatrix * aVertexNormal);
+    vPositionInViewSpace = positionInViewSpace.xyz;
+    vPositionInShadowSpace = uShadowMatrix * positionInWorldSpace;
 }

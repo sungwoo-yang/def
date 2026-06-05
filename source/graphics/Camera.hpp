@@ -1,8 +1,8 @@
 /**
  * \file
  * \author Rudy Castan
- * \author TODO Your Name
- * \date 2024 Spring
+ * \author Sungwoo Yang
+ * \date 2025 Spring
  * \par CS250 Computer Graphics II
  * \copyright DigiPen Institute of Technology
  */
@@ -65,23 +65,21 @@ namespace graphics
 
         [[nodiscard]] constexpr glm::mat4 ViewMatrix() const noexcept
         {
-            // TODO fill in column vectors of the View Matrix (world space to camera space)
-            //      You do not need any external functions except for doing a dot product
-            const glm::vec4 column_1{};
-            const glm::vec4 column_2{};
-            const glm::vec4 column_3{};
-            const glm::vec4 column_4{};
+            const glm::vec4 column_1{ Right.x, Up.x, Back.x, 0.0f };
+            const glm::vec4 column_2{ Right.y, Up.y, Back.y, 0.0f };
+            const glm::vec4 column_3{ Right.z, Up.z, Back.z, 0.0f };
+            const glm::vec4 column_4{ -glm::dot(Right, Eye), -glm::dot(Up, Eye), -glm::dot(Back, Eye), 1.0f };
+
             return glm::mat4{ column_1, column_2, column_3, column_4 };
         }
 
         [[nodiscard]] constexpr glm::mat4 ToWorldMatrix() const noexcept
         {
-            // TODO fill in column vectors of the Inverse of the View Matrix (camera space to world space)
-            //      DO NOT invoke any external functions like glm::inverse. It is not needed!
-            const glm::vec4 column_1{};
-            const glm::vec4 column_2{};
-            const glm::vec4 column_3{};
-            const glm::vec4 column_4{};
+            const glm::vec4 column_1{ Right, 0.0f };
+            const glm::vec4 column_2{ Up, 0.0f };
+            const glm::vec4 column_3{ Back, 0.0f };
+            const glm::vec4 column_4{ Eye, 1.0f };
+
             return glm::mat4{ column_1, column_2, column_3, column_4 };
         }
     };

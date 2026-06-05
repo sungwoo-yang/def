@@ -56,6 +56,7 @@ namespace graphics
         std::vector<unsigned>   Indicies{};
     };
 
+    Geometry create_trefoil(int stacks, int slices);
     Geometry create_plane(int stacks, int slices);
     Geometry create_cube(int stacks, int slices);
     Geometry create_sphere(int stacks, int slices);
