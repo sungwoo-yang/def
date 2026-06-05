@@ -120,7 +120,7 @@ namespace opengl
                 data_type = GL_FLOAT;
             }
 
-            GL::TexImage2D(GL_TEXTURE_2D, 0, bit_depth, width, height, 0, GL_DEPTH_COMPONENT, data_type, nullptr);
+            GL::TexImage2D(GL_TEXTURE_2D, 0, static_cast<GLint>(bit_depth), width, height, 0, GL_DEPTH_COMPONENT, data_type, nullptr);
         }
 
         filtering = Filtering::Linear;

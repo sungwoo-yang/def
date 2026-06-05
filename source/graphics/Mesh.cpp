@@ -27,39 +27,24 @@ namespace graphics
         std::vector<MeshVertex> vertices;
         vertices.reserve(static_cast<size_t>(stacks + 1) * static_cast<size_t>(slices + 1));
 
-        constexpr float curve_scale  = 0.15f;
-        constexpr float tube_radius  = 0.08f;
-        constexpr float tangent_step = 0.01f;
+        constexpr float normal_step = 0.001f;
 
         for (int stack = 0; stack <= stacks; ++stack)
         {
             const float row = static_cast<float>(stack) / static_cast<float>(stacks);
-            const float t   = row * 2.0f * PI;
-
-            const glm::vec3 center = curve_scale * evaluate_trefoil(t);
-            const glm::vec3 prev   = curve_scale * evaluate_trefoil(t - tangent_step);
-            const glm::vec3 next   = curve_scale * evaluate_trefoil(t + tangent_step);
-
-            const glm::vec3 tangent = glm::normalize(next - prev);
-
-            const glm::vec3 reference = (std::abs(tangent.y) < 0.9f) ? glm::vec3(0.0f, 1.0f, 0.0f) : glm::vec3(1.0f, 0.0f, 0.0f);
-
-            const glm::vec3 frame_normal   = glm::normalize(glm::cross(reference, tangent));
-            const glm::vec3 frame_binormal = glm::normalize(glm::cross(tangent, frame_normal));
 
             for (int slice = 0; slice <= slices; ++slice)
             {
-                const float col  = static_cast<float>(slice) / static_cast<float>(slices);
-                const float beta = col * 2.0f * PI;
+                const float col = static_cast<float>(slice) / static_cast<float>(slices);
 
-                const float sin_beta = std::sin(beta);
-                const float cos_beta = std::cos(beta);
+                const glm::vec3 position = evaluate_trefoil(row, col);
 
-                const glm::vec3 radial_direction = cos_beta * frame_normal + sin_beta * frame_binormal;
+                const glm::vec3 row_tangent = evaluate_trefoil(row + normal_step, col) - evaluate_trefoil(row - normal_step, col);
+                const glm::vec3 col_tangent = evaluate_trefoil(row, col + normal_step) - evaluate_trefoil(row, col - normal_step);
 
                 MeshVertex vertex;
-                vertex.position = center + tube_radius * radial_direction;
-                vertex.normal   = radial_direction;
+                vertex.position = position;
+                vertex.normal   = glm::normalize(glm::cross(col_tangent, row_tangent));
                 vertex.uv       = glm::vec2(col, row);
 
                 vertices.push_back(vertex);
@@ -511,8 +496,32 @@ namespace
         return lines_indices;
     }
 
-    glm::vec3 evaluate_trefoil(float t)
+    glm::vec3 evaluate_trefoil(float row, float col)
     {
-        return glm::vec3(std::sin(t) + 2.0f * std::sin(2.0f * t), std::cos(t) - 2.0f * std::cos(2.0f * t), -std::sin(3.0f * t));
+        constexpr float curve_scale  = 0.15f;
+        constexpr float tube_radius  = 0.08f;
+        constexpr float tangent_step = 0.001f;
+
+        const auto centerline = [](float parameter)
+        {
+            const float t = parameter * 2.0f * graphics::PI;
+
+            return curve_scale * glm::vec3(std::sin(t) + 2.0f * std::sin(2.0f * t), std::cos(t) - 2.0f * std::cos(2.0f * t), -std::sin(3.0f * t));
+        };
+
+        const glm::vec3 center = centerline(row);
+        const glm::vec3 prev   = centerline(row - tangent_step);
+        const glm::vec3 next   = centerline(row + tangent_step);
+
+        const glm::vec3 tangent = glm::normalize(next - prev);
+
+        const glm::vec3 reference = (std::abs(tangent.y) < 0.9f) ? glm::vec3(0.0f, 1.0f, 0.0f) : glm::vec3(1.0f, 0.0f, 0.0f);
+
+        const glm::vec3 frame_normal   = glm::normalize(glm::cross(reference, tangent));
+        const glm::vec3 frame_binormal = glm::normalize(glm::cross(tangent, frame_normal));
+
+        const float beta = col * 2.0f * graphics::PI;
+
+        return center + tube_radius * (std::cos(beta) * frame_normal + std::sin(beta) * frame_binormal);
     }
 }
