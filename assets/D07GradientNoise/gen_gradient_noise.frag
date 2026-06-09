@@ -194,7 +194,9 @@ float turbulence(vec3 position)
 float marble(vec3 position)
 {
     float noiseValue = fractalSum(position);
-    float wave = sin((position.x / 8.0 + noiseValue * 2.0) * 2.0 * PI);
+
+    float stripe = position.x / 3.0 + (noiseValue - 0.5) * 0.35;
+    float wave = sin(stripe * 2.0 * PI);
 
     return wave * 0.5 + 0.5;
 }
@@ -202,9 +204,11 @@ float marble(vec3 position)
 float wood(vec3 position)
 {
     float noiseValue = fractalSum(position);
-    float rings = fract((position.x + position.y) / 8.0 + noiseValue * 0.75);
 
-    return rings;
+    float woodValue = noiseValue * 10.0;
+    woodValue -= floor(woodValue);
+
+    return woodValue;
 }
 
 float evaluatePattern(vec3 position)
