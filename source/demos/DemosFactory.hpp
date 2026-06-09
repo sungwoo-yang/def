@@ -21,7 +21,8 @@ namespace demos
         HelloQuad,
         ProceduralMeshes,
         ShadowMapping,
-        ValueNoise
+        ValueNoise,
+        GradientNoise
     };
 
     gsl::owner<IDemo*> create_demo(Demos the_demo);

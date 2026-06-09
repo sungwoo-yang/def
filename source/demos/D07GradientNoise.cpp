@@ -215,7 +215,7 @@ namespace demos
         spec.ColorFormat = opengl::FrameBuffer::ColorComponent::R32F;
         noiseFrameBuffer.LoadWithSpecification(spec);
         auto& texture = noiseFrameBuffer.ColorTexture();
-        texture.SetFiltering(opengl::Texture::Linear);
+        texture.SetFiltering(opengl::Texture::NearestPixel);
         texture.SetWrapping(opengl::Texture::Repeat);
     }
 

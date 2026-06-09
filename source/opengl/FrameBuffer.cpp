@@ -62,11 +62,14 @@ namespace opengl
 
         if (spec.ColorFormat != ColorComponent::None)
         {
-            if (const auto loaded = colorTexture.LoadAsRGBA(width, height); !loaded)
+            const auto color_format = static_cast<Texture::ColorFormat>(spec.ColorFormat);
+
+            if (const auto loaded = colorTexture.LoadAsFormat(width, height, color_format); !loaded)
             {
                 util::log_error("Failed to create color texture");
                 return;
             }
+
             draw_buffers[0] = GL_COLOR_ATTACHMENT0;
         }
         else

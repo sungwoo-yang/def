@@ -15,6 +15,7 @@ set(SOURCE_CODE
     demos/D02ProceduralMeshes.hpp demos/D02ProceduralMeshes.cpp
     demos/D05ShadowMapping.hpp demos/D05ShadowMapping.cpp
     demos/D06ValueNoise.hpp demos/D06ValueNoise.cpp
+    demos/D07GradientNoise.hpp demos/D07GradientNoise.cpp
     demos/DemosFactory.hpp demos/DemosFactory.cpp
 
     demos/IDemo.hpp

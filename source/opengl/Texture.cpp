@@ -138,9 +138,64 @@ namespace opengl
         return texture_handle != 0;
     }
 
+    bool Texture::LoadAsFormat(int image_width, int image_height, ColorFormat format) noexcept
+    {
+        if (image_width <= 0 || image_height <= 0)
+        {
+            return false;
+        }
+
+        delete_texture();
+
+        width  = image_width;
+        height = image_height;
+
+        GL::GenTextures(1, &texture_handle);
+        GL::BindTexture(GL_TEXTURE_2D, texture_handle);
+
+        if (opengl::IsWebGL || opengl::current_version() >= opengl::version(4, 2))
+        {
+            GL::TexStorage2D(GL_TEXTURE_2D, 1, format, width, height);
+        }
+        else
+        {
+            GLenum pixel_format = GL_RGBA;
+            GLenum pixel_type   = GL_UNSIGNED_BYTE;
+
+            switch (format)
+            {
+                case ColorFormat::RGBA8:
+                    pixel_format = GL_RGBA;
+                    pixel_type   = GL_UNSIGNED_BYTE;
+                    break;
+
+                case ColorFormat::RGBA32F:
+                    pixel_format = GL_RGBA;
+                    pixel_type   = GL_FLOAT;
+                    break;
+
+                case ColorFormat::R32F:
+                    pixel_format = GL_RED;
+                    pixel_type   = GL_FLOAT;
+                    break;
+            }
+
+            GL::TexImage2D(GL_TEXTURE_2D, 0, static_cast<GLint>(format), width, height, 0, pixel_format, pixel_type, nullptr);
+        }
+
+        GL::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filtering);
+        GL::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filtering);
+        GL::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapping[S]);
+        GL::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapping[T]);
+
+        GL::BindTexture(GL_TEXTURE_2D, 0);
+
+        return texture_handle != 0;
+    }
+
     bool Texture::LoadAsRGBA(int image_width, int image_height) noexcept
     {
-        return LoadFromMemory(image_width, image_height, nullptr);
+        return LoadAsFormat(image_width, image_height, ColorFormat::RGBA8);
     }
 
     void Texture::UploadAsRGBA(gsl::not_null<const RGBA*> colors) noexcept
